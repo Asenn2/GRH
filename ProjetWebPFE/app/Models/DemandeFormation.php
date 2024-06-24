@@ -25,12 +25,12 @@ class DemandeFormation extends Model
 
     //Clé étrangère ici :
 
-    public function Formation()
+    public function formation()
     {
         return $this->belongsTo(Formation::class, 'Formation', 'idFormation');
     }
 
-    public function Employe()
+    public function employe()
     {
         return $this->belongsTo(Employe::class, 'Employe', 'idEmploye');
     }

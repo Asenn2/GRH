@@ -28,4 +28,9 @@ class Conge extends Model
     {
         return $this->belongsTo(TypeConge::class, 'TypeConge', 'idTypeConge');
     }
+
+    public function employe()
+    {
+        return $this->belongsTo(Employe::class, 'idEmploye', 'idEmploye');
+    }
 }

@@ -63,12 +63,23 @@ class Employe extends Model
     public function contrats()
     {
 
-        return $this->hasMany(Contrat::class);
+        return $this->hasMany(Contrat::class, 'Employe');
     }
 
     public function promotions()
     {
 
         return $this->hasMany(Promotion::class);
+    }
+
+    public function demandeFormation()
+    {
+
+        return $this->hasMany(demandeFormation::class);
+    }
+
+    public function stage()
+    {
+        return $this->hasOne(Stagiaire::class, 'Employe');
     }
 }

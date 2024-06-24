@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)http://127.0.0.1:8000/Departement/info/2 -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+<style data-fullcalendar=""></style><style type="text/css" id="operaUserStyle"></style></head>
+<body>
+    <script src="./Document_files/index.global.min.js.téléchargé"></script>
+    <script src="./Document_files/jquery.min.js.téléchargé"></script>
+    <script src="./Document_files/chart.js.téléchargé"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastSuccess = document.getElementById('toastSuccess');
+        const toastError = document.getElementById('toastError');
+
+        // Vérifier si la session contient un message de succès
+                // Vérifier si la session contient un message d'erreur 
+         
+    });
+
+    $(document).ready(function () {
+        $('#home').addClass('nav-link disabled');
+        
+        // Données pour les graphiques
+        const nbremployesActifs = 0;
+        const nbrtype = {"Formation":2,"Promotion":2,"Stage":1};
+
+        // Graphique Emplois par Département
+        var ctx1 = document.getElementById('employeeStatusChart').getContext('2d');
+        var employeeStatusChart = new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['Actifs', 'Inactifs'],
+                datasets: [{
+                    data: [0, 2],
+                    backgroundColor: ['#36A2EB', '#FF6384']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                }
+            }
+        });
+
+        // Graphique Tâches par Statut
+        const ctx2 = document.getElementById('nbrtype').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(nbrtype),
+                datasets: [{
+                    label: 'Opportunité',
+                    data: Object.values(nbrtype),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+
+
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info &amp; Statistiques Département</title>
+    <link href="./Document_files/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<meta name="csrf-token " content="RMw7TXDylrZ0186EIOg1E2xeiddlVNovUNbHxn3m">
+<style>
+    body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+   /* background-color: rgb(110, 57, 117)*/
+
+    }
+   /* .container {
+    flex: 1;
+}*/
+</style>
+
+
+    
+<!-- La Navbar -->
+
+
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+
+    <nav class="navbar navbar-expand-lg d-print-none " style="background-color: rgb(86,127,167)">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="http://127.0.0.1:8000/Departement/info/2#"><img src="./Document_files/5422484.png" alt="Logo" style="height: 40px;"></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link disabled" id="home" aria-current="page" href="http://127.0.0.1:8000/ResponsableRH">Home</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://127.0.0.1:8000/Departement/info/2#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Employés
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item " id="emp" href="http://127.0.0.1:8000/ResponsableRH/Employ%C3%A9">Liste</a></li>
+                  <li><a class="dropdown-item " id="contrat" href="http://127.0.0.1:8000/ResponsableRH/Contrat">Contrat</a></li>
+                  <li><a class="dropdown-item" id="candidature" href="http://127.0.0.1:8000/ResponsableRH/Candidature">Candidature</a></li>
+                  <li><a class="dropdown-item " id="poste" href="http://127.0.0.1:8000/ResponsableRH/Poste">Postes</a></li>
+                  <li><a class="dropdown-item " id="conge" href="http://127.0.0.1:8000/ResponsableRH/Conge">Congé</a></li>
+      
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://127.0.0.1:8000/Departement/info/2#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Carrières
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" id="promo" href="http://127.0.0.1:8000/ResponsableRH/Promotion">Promotion</a></li>
+                  <li><a class="dropdown-item  " id="ellig" href="http://127.0.0.1:8000/ResponsableRH/ListeElligible">Liste Elligible </a></li>
+                  <li><a class="dropdown-item " id="form" href="http://127.0.0.1:8000/ResponsableRH/Formation">Formation</a></li>
+      
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="dep" href="http://127.0.0.1:8000/ResponsableRH/Departement">Départements</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://127.0.0.1:8000/Departement/info/2#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Stages
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item " id="stage" href="http://127.0.0.1:8000/ResponsableRH/Stage">Gestion de Stages</a></li>
+                  <li><a class="dropdown-item" id="demstage" href="http://127.0.0.1:8000/ResponsableRH/DemandeStage">Demande de Stage</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <form action="http://127.0.0.1:8000/logout" method="post">
+                  <input type="hidden" name="_token" value="RMw7TXDylrZ0186EIOg1E2xeiddlVNovUNbHxn3m" autocomplete="off">                  <input type="hidden" name="_method" value="delete">                  <button><img src="./Document_files/door-closed-fill.svg" alt="Logo" style="height: 40px"></button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    
+
+
+<div class="container mt-4">
+    <a href="http://127.0.0.1:8000/Departement/info/2#" class="btn btn-outline-secondary mb-2 " onclick="history.back()">Annuler</a>
+
+    <div class="card shadow-lg">
+        <div class="card-body">
+
+            <!-- Widgets pour des statistiques rapides -->
+            <div class="row text-center">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre total d'employés</h5>
+                            <p class="display-4">2</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre d'employés actifs</h5>
+                            <p class="display-4">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre de Stage en cours</h5>
+                            <p class="display-4">1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <h4 class="text-center">Status des Employés</h4>
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <canvas id="employeeStatusChart" width="732" height="732" style="display: block; box-sizing: border-box; height: 585px; width: 585px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <h4 class="text-center">Opportunité</h4>
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <canvas id="nbrtype" width="732" height="732" style="display: block; box-sizing: border-box; height: 585px; width: 585px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="./Document_files/bootstrap.bundle.min.js.téléchargé" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+      </script>
+    
+
+
+</body></html>

@@ -4,56 +4,8 @@
 
 <!--La Navbar  -->
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">GRH</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{route('ResponsableRH')}}">Home</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Employés
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item " href="{{route('ListeEmploye')}}">Liste</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeContrat')}}">Contrat</a></li>
-            <li><a class="dropdown-item" href="{{route('ListeCandidature')}}">Candidature</a></li>
-            <li><a class="dropdown-item " href="{{route('ListePoste')}}">Postes</a></li>
-            <li><a class="dropdown-item disabled " href="{{route('ListeConge')}}">Congé</a></li>
+@include('navbar')
 
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Carrières
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item  " href="{{route('ListePromotion')}}">Promotion</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeFormation')}}">Formation</a></li>
-
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{route('ListeDepartement')}}">Départements</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stages
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item " href="/ResponsableRH/Stage">Gestion de Stages</a></li>
-            <li><a class="dropdown-item" href="#">Demande de Stage</a></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
 
   <!--Catch De Succès -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -70,38 +22,57 @@
     </div>
 </div>
   
-  <!--Catch D'erreur  -->
+<!--Catch D'erreur  -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="toastError" class="toast " role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <strong class="me-auto">Alert</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body">
-        @if ($errors->any())
-          <ul>
-            @foreach ($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        @endif
-      </div>
+  <div id="toastError" class="toast " role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Alert</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
-</div>
+    <div class="toast-body">
+      @if ($errors->any())
+        <ul>
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      @elseif(session('error'))
+      <p>{{session('error')}}</p>
 
-<div class="container">
-  <div class="row  mt-1 justify-content-center">
-  <div class="col-2 border rounded">
-    <button type="button" class="btn-lg  btn-primary w-100 my-1 " data-bs-toggle="modal" data-bs-target="#modalformConge" style="height: 60px">
+      @endif
+    </div>
+  </div>
+</div>
+<h4 class="text-center mt-2">Tableau de Bord</h4>
+<div class="container mt-2">
+  <div class="card shadow-lg">
+    <div class="row mx-2 my-2 justify-content-between">
+  <div class="col-2 ">
+    <button type="button" class="btn  btn-outline-primary " data-bs-toggle="modal" data-bs-target="#modalformConge" >
       <img src="/bootstrap-icons/icons/plus.svg" style="height: 80%"> 
       Congé Annuel
     </button>
-    <a  class="float-end text-decoration-none  pb-1 font-italic text-muted" data-bs-toggle="modal" data-bs-target="#modalformType">
-      Ajouter un type...&rarr;</a> 
+  </div> 
+    <div class="col-2">
+    <a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalformType">
+      Ajouter un type...&rarr;</a>
+  </div>
+  <div class="col-2">
+    <button type="button" id="Encoursbtn" class="btn btn-outline-secondary">Afficher les demandes en cours ...</button>
+  </div>
+  <div class="col-2">
+    <button type="button" id="Acceptebtn" class="btn btn-outline-success">Afficher les demandes acceptées.           
+      <img src="/bootstrap-icons/icons/check.svg" style="height: 80%"> 
+    </button>
+  </div>
+  <div class="col-2">
+    <button type="button" id="Refusebtn" class="btn btn-outline-danger">Afficher les demandes refusées.           
+      <img src="/bootstrap-icons/icons/x-lg.svg" style="height: 80%"> 
+    </button>
   </div>
   </div>
 </div>
-
+</div>
     <!--Modal pour créer un type de Congé-->
 
     <div class="modal fade" id="modalformType" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width: 100%" style="max-width: 2000px">
@@ -159,7 +130,7 @@
           @foreach($typeconges as $typeconge)
           <tr class="typeconge-{{$typeconge->idTypeConge}}">
             <td class="idTypeConge">{{$typeconge->idTypeConge}}</td>
-            <td class="NomTypeConge">{{$typeconge->NomTypeconge}}</td>
+            <td class="NomTypeConge">{{$typeconge->NomTypeConge}}</td>
             <td class="Desc">{{$typeconge->Desc}}</td>
       
             <td>
@@ -229,153 +200,192 @@
     </div>
 
     <!--Button pour afficher les congés annuels-->
-
-<div class="container mt-5">
-    <div class="row justify-content-center" >
-      <div class="col-6">
-  <div class="card" style="width: 100%">
-    <div class="card-body">
-      <div id="calendar" style="width: 100%">
+<div class="row justify-content-center text-center mt-3">
+    <div class="col-md-4">
+      <h5 class="text-center mt-3">Calendrier des congés</h5>
+      <div class="card shadow-lg mb-4">
+        <div class="card-body">
+          <button type="button" class="btn btn-outline-info float-end mb-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Afficher les Congé</button>
+          <div class="card" style="width: 100%">
+            <div class="card-body">
+              <div id="calendar" style="width: 100%">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  </div>
-  <div class="col-5">
-    <button type="button" class="btn-lg btn-primary " data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Afficher les Congé</button>
-  </div>
-  </div>
-</div>
+    <div class="col-md-7">
+      <h5 class="text-center mt-3">Liste des demandes</h5>
+      <div class="container" id="EncoursTable" style="display: block">
+        <table class="table caption-top" >
+          <thead>
+            <tr class="table-primary">
 
-    <!--les 3 boutons pour la gestion des demandes-->
-
-<div class="row  justify-content-center mt-2" >
-  <div class="col-3">
-    <button type="button" id="Encoursbtn" class="btn btn-secondary">Afficher les demandes en cours ...</button>
-  </div>
-  <div class="col-3">
-    <button type="button" id="Acceptebtn" class="btn btn-success">Afficher les demandes acceptées.           
-      <img src="/bootstrap-icons/icons/check.svg" style="height: 80%"> 
-    </button>
-  </div>
-  <div class="col-3">
-    <button type="button" id="Refusebtn" class="btn btn-danger">Afficher les demandes refusées.           
-      <img src="/bootstrap-icons/icons/x-lg.svg" style="height: 80%"> 
-    </button>
-  </div>
-</div>
-
-    <!--les 3 tables pour la gestion des demandes-->
-
-<div class="container" id="EncoursTable" style="display: none">
-  <table class="table caption-top" >
-    <thead>
-      <tr class="table-primary">
-
-        <th scope="col">idConge</th>
-        <th scope="col">Type du Conge</th>
-        <th scope="col">Date de Debut</th>
-        <th scope="col">Date de Fin</th>
-        <th scope="col">Description</th>
-        <th colspan="2">Opérations</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($conges as $conge)
-      @if($conge->status=='En cours')
-      <tr class="contrat-{{$conge->idConge}}">
-        <td class="idConge">{{$conge->idConge}}</td>
-        <td class="TypeConge">{{$conge->typeconge->NomTypeConge}}</td>
-        <td class="DateDebut">{{$conge->DateDebut}}</td>
-        <td class="DateFin">{{$conge->DateFin}}</td>
-        <td class="Description">{{$conge->Description}}</td>
-        <td>
-          <a class="text-decoration-dotted-line border-bottom border-dark pb-1 font-italic text-success" href="">
-            Approuver &rarr;
-        </a>
-        </td>
-        <td>
-          <form action="#" class="pt-2" method="POST">
-            @csrf
-            @method('delete')
-            <button type="submit" class="btn btn-link text-decoration-none border-bottom border-dark pb-1 font-italic text-danger">
-                Refuser &rarr;
-            </button>
-        </form>
-        </td>
-      </tr>
-      @endif
-      @endforeach
-    </tbody>
-  </table>
-</div>
-<div class="container" id="AccepteTable" style="display: none">
-  <table class="table caption-top" >
-    <thead>
-      <tr class="table-primary">
-
-        <th scope="col">idConge</th>
-        <th scope="col">Type du Conge</th>
-        <th scope="col">Date de Debut</th>
-        <th scope="col">Date de Fin</th>
-        <th scope="col">Description</th>
-        <th colspan="2">Opérations</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($conges as $conge)
-      @if($conge->status=='Accepte')
-      <tr class="contrat-{{$conge->idConge}}">
-        <td class="idConge">{{$conge->idConge}}</td>
-        <td class="TypeConge">{{$conge->typeconge->NomTypeConge}}</td>
-        <td class="DateDebut">{{$conge->DateDebut}}</td>
-        <td class="DateFin">{{$conge->DateFin}}</td>
-        <td class="Description">{{$conge->Description}}</td>
-        <td>
-            <button type="button" class="btn btn-link text-decoration-none border-bottom border-dark pb-1 font-italic text-danger">
-                Refuser &rarr;
-            </button>
-        </td>
-      </tr>
+              <th scope="col">Nom Employé</th>
+              <th scope="col">Prenom Employé</th>    
+              <th scope="col">Type du Conge</th>
+              <th scope="col">Date de Debut</th>
+              <th scope="col">Date de Fin</th>
+              <th scope="col">Description</th>
+              <th colspan="2">Opérations</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($demandes as $demande)
+            @if($demande->status=='En cours')
+            <tr class="contrat-{{$demande->idConge}}">
+              <td class="TypeConge">{{$demande->employe->nom}}</td>
+              <td class="TypeConge">{{$demande->employe->prenom}}</td>
+              <td class="TypeConge">{{$demande->typeconge->NomTypeConge}}</td>
+              <td class="DateDebut">{{$demande->DateDebut}}</td>
+              <td class="DateFin">{{$demande->DateFin}}</td>
+              <td class="Description"><a href="" data-bs-toggle="modal" data-bs-target="#modalformDescription{{$demande->idConge}}" >Description</a>
+              </td>
+              <td>
+                <a class="btn btn-outline-success" href="{{route('modifierDemande',['demande'=>$demande,'action'=>'Refuser'])}}">
+                  Approuver &rarr;
+              </a>
+              </td>
+              <td>
+                <a class="btn btn-outline-danger" href="{{route('modifierDemande',['demande'=>$demande,'action'=>'Refuser'])}}">
+                  Refuser &rarr;
+              </a>
+              </td>
+            </tr>
+            @endif
+                            <!--Modal pour chaque Description-->
+                            <div class="modal fade" id="modalformDescription{{$demande->idConge}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width: 100%" style="max-width: 2000px">
+                              <div class="modal-dialog modal-dialog-scrollable">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Description</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">                                  
+                              <p>{{$demande->Description}} </p>                            
+                                      </div>                                                      
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                        </div>                            
+                                  </div>
+                            </div>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+      <div class="container" id="AccepteTable" style="display: none">
+        <table class="table caption-top" >
+          <thead>
+            <tr class="table-primary">
       
-      @endif
-      @endforeach
-    </tbody>
-  </table>
-</div>
-<div class="container" id="RefuseTable" style="display: none">
-  <table class="table caption-top" >
-    <thead>
-      <tr class="table-primary">
-
-        <th scope="col">idConge</th>
-        <th scope="col">Type du Conge</th>
-        <th scope="col">Date de Debut</th>
-        <th scope="col">Date de Fin</th>
-        <th scope="col">Description</th>
-        <th colspan="2">Opérations</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($conges as $conge)
-      @if($conge->status=='Refusé')
-      <tr class="contrat-{{$conge->idConge}}">
-        <td class="idConge">{{$conge->idConge}}</td>
-        <td class="TypeConge">{{$conge->typeconge->NomTypeConge}}</td>
-        <td class="DateDebut">{{$conge->DateDebut}}</td>
-        <td class="DateFin">{{$conge->DateFin}}</td>
-        <td class="Description">{{$conge->Description}}</td>
-        <td>
-          <a class="text-decoration-dotted-line border-bottom border-dark pb-1 font-italic text-success" href="">
-            Approuver &rarr;
-        </a>
-        </td>
-      </tr>
+              <th scope="col">Nom Employe</th>
+              <th scope="col">Prenom Employe</th>
+              <th scope="col">Type du Conge</th>
+              <th scope="col">Date de Debut</th>
+              <th scope="col">Date de Fin</th>
+              <th scope="col">Description</th>
+              <th colspan="2">Opérations</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($demandes as $demande)
+            @if($demande->status=='Accepte')
+            <tr class="contrat-{{$demande->idConge}}">
+              <td class="Nom Employe">{{$demande->employe->nom}}</td>
+              <td class="Prenom Employe">{{$demande->employe->prenom}}</td>
+              <td class="TypeConge">{{$demande->typeconge->NomTypeConge}}</td>
+              <td class="DateDebut">{{$demande->DateDebut}}</td>
+              <td class="DateFin">{{$demande->DateFin}}</td>
+              <td class="Description"><a href="" data-bs-toggle="modal" data-bs-target="#modalformDescriptionAccepté{{$demande->idConge}}" >Description</a>
+              </td>
+                            <td>
+                <a class="btn btn-outline-danger" href="{{route('modifierDemande',['demande'=>$demande,'action'=>'Refuser'])}}">
+                  Refuser &rarr;
+              </a>
+              </td>
+            </tr>
+            
+            @endif
+                                        <!--Modal pour chaque Description-->
+                                        <div class="modal fade" id="modalformDescriptionAccepté{{$demande->idConge}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width: 100%" style="max-width: 2000px">
+                                          <div class="modal-dialog modal-dialog-scrollable">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Description</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">                                  
+                                          <p>{{$demande->Description}} </p>                            
+                                                  </div>                                                      
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                    </div>                            
+                                              </div>
+                                        </div>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+      <div class="container" id="RefuseTable" style="display: none">
+        <table class="table caption-top" >
+          <thead>
+            <tr class="table-primary">
       
-      @endif
-      @endforeach
-    </tbody>
-  </table>
+              <th scope="col">Nom Employe</th>
+              <th scope="col">Prenom Employe</th>
+              <th scope="col">Type du Conge</th>
+              <th scope="col">Date de Debut</th>
+              <th scope="col">Date de Fin</th>
+              <th scope="col">Description</th>
+              <th colspan="2">Opérations</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($demandes as $demande)
+            @if($demande->status=='Refusé')
+            <tr class="contrat-{{$demande->idConge}}">
+              <td class="Nom">{{$demande->employe->nom}}</td>
+              <td class="Prenom">{{$demande->employe->prenom}}</td>
+              <td class="TypeConge">{{$demande->typeconge->NomTypeConge}}</td>
+              <td class="DateDebut">{{$demande->DateDebut}}</td>
+              <td class="DateFin">{{$demande->DateFin}}</td>
+              <td class="Description"><a href="" data-bs-toggle="modal" data-bs-target="#modalformDescriptionRefusé{{$demande->idConge}}" >Description</a>
+              </td>
+                <td>
+                <a class="btn btn-outline-success" href="{{route('modifierDemande',['demande'=>$demande,'action'=>'Approuver'])}}">
+                  Approuver &rarr;
+              </a>
+              </td>
+            </tr>
+            
+            @endif
+                                        <!--Modal pour chaque Description-->
+                                        <div class="modal fade" id="modalformDescriptionRefusé{{$demande->idConge}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width: 100%" style="max-width: 2000px">
+                                          <div class="modal-dialog modal-dialog-scrollable">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Description</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">                                  
+                                          <p>{{$demande->Description}} </p>                            
+                                                  </div>                                                      
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                    </div>                            
+                                              </div>
+                                        </div>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
 </div>
+
 
     <!--Liste des Congés annuels-->
 
@@ -394,25 +404,29 @@
 </div>
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
+@extends('script')
+@section('scripts')
 <script>
+    //Catch des succès et erreurs
     document.addEventListener('DOMContentLoaded', function () {
       const toastSuccess = document.getElementById('toastSuccess');
       const toastError = document.getElementById('toastError');
 
-        // Vérifier si la session contient un message de succès
         @if(session()->has('success'))
-            // Sélectionner le toast et le montrer
+
             var bsToast = new bootstrap.Toast(toastSuccess);
             bsToast.show();
+
         @endif
-        // Vérifier si la session contient un message d'erreur 
+
         @if ($errors->any())
-            // Sélectionner le toast et le montrer
+
             var bsToast = new bootstrap.Toast(toastError);
             bsToast.show();
-        @endif        
+
+    @endif        
+       
+      
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: 'dayGridMonth',
@@ -492,8 +506,12 @@
   });
 
         });
-
+        $(document).ready(function () {
+        $('#conge').addClass('nav-link disabled');
+    });
 
 
                
 </script>
+@endsection
+@endsection

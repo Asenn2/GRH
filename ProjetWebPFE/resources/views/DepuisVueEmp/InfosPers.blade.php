@@ -3,85 +3,95 @@
 @section('content')
 
 <!--La Navbar  -->
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand disabled" href="{{route('InfosPers', ['id' => $employe->idEmploye] )}}"><img src="/bootstrap-icons/icons/file-earmark-person.svg" style="height: 100%"> {{$employe->nom}}  {{ $employe->prenom }}</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{ route("EmployeHome", ['id' => $employe->idEmploye]) }}">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{ route("DemandeConge",['id'=>$employe->idEmploye]) }}">Demande de Congé</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("FormationEmploye",['id'=>$employe->idEmploye]) }}">Formations</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("PromotionEmploye",['id'=>$employe->idEmploye]) }}">Promotions</a>
-          </li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('login') }}">
-            <img src="/bootstrap-icons/icons/door-closed-fill.svg" style="height: 80%">
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+@include('navbarEmp')
 
-<!-- Section Informations Personnelles -->
+<!-- Section Informations Personnelles et Professionnelles -->
 <section class="container mt-4">
   <div class="row">
     <div class="col-md-12">
-      <div class="card">
-        <div class="card-header  text-white" style="background-color: rgb(153,0,204)">
-          <h4>Informations Personnelles</h4>
+      <div class="accordion" id="accordionInformations">
+        <!-- Informations Personnelles -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="background-color: rgb(86,127,167); color: white;">
+              Informations Personnelles
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionInformations">
+            <div class="accordion-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Nom:</h5>
+                  <p>{{ $employe->nom }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h5>Prénom:</h5>
+                  <p>{{ $employe->prenom }}</p>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Email:</h5>
+                  <p>{{ $employe->mail }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h5>Téléphone:</h5>
+                  <p>{{ $employe->Num }}</p>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Adresse:</h5>
+                  <p>{{ $employe->Adresse }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h5>Date de Naissance:</h5>
+                  <p>{{ $employe->DateNaiss }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <h5>Nom:</h5>
-              <p>{{ $employe->nom }}</p>
-            </div>
-            <div class="col-md-6">
-              <h5>Prénom:</h5>
-              <p>{{ $employe->prenom }}</p>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <h5>Email:</h5>
-              <p>{{ $employe->mail }}</p>
-            </div>
-            <div class="col-md-6">
-              <h5>Téléphone:</h5>
-              <p>{{ $employe->Num }}</p>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <h5>Adresse:</h5>
-              <p>{{ $employe->Adresse }}</p>
-            </div>
-            <div class="col-md-6">
-              <h5>Poste:</h5>
-              <p>{{ $employe->poste->Fonction }}</p>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <h5>Département:</h5>
-              <p>{{ $employe->departement->nom }}</p>
-            </div>
-            <div class="col-md-6">
-              <h5>Date d'embauche:</h5>
-              <p>{{ $employe->dateEmb }}</p>
+        <!-- Informations Professionnelles -->
+        <div class="accordion-item mt-3">
+          <h2 class="accordion-header" id="headingTwo">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" style="background-color: rgb(86,127,167); color: white;">
+              Informations Professionnelles
+            </button>
+          </h2>
+          <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionInformations">
+            <div class="accordion-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Poste:</h5>
+                  <p>{{ $employe->poste->Fonction }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h5>Département:</h5>
+                  <p>{{ $employe->departement->nom }}</p>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Date d'embauche:</h5>
+                  <p>{{ $employe->dateEmb }}</p>
+                </div>
+                <div class="col-md-6">
+                  <h5>Salaire:</h5>
+                  <p>{{ $employe->poste->Salaire }}</p>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <h5>Contrat:</h5>
+                  @foreach($employe->contrats as $contrat)
+                  @if($contrat->typeContrat && $contrat->status=="En cours") 
+                      <p>{{ $contrat->typeContrat->NomTypeContrat }}</p>
+                  @else
+                      <p>Aucun type de contrat trouvé.</p>
+                  @endif
+              @endforeach                </div>
+              </div>
             </div>
           </div>
         </div>

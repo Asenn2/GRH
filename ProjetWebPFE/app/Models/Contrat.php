@@ -16,10 +16,12 @@ class Contrat extends Model
     protected $fillable = [
         'status',
         'Employe',
-        'Conditions',
+        'Avantage',
+        'poste',
         'Type',
         'Debut',
         'Fin',
+        'soldeCG',
         'DateResiliation',
         'contratFile',
     ];
@@ -28,12 +30,12 @@ class Contrat extends Model
 
     public function typeContrat()
     {
-        return $this->belongsTo(TypeContrat::class);
+        return $this->belongsTo(TypeContrat::class, 'Type', 'idTypeContrat');
     }
     public function employe()
     {
 
-        return $this->belongsTo(Employe::class);
+        return $this->belongsTo(Employe::class, 'Employe', 'idEmploye');
     }
 
     public function isStatus()
@@ -49,5 +51,9 @@ class Contrat extends Model
         } else {
             return "En cours";
         }
+    }
+    public function avantages()
+    {
+        return $this->belongsToMany(Avantage::class, 'contrat_avantage');
     }
 }

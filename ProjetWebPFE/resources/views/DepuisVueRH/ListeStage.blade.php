@@ -4,56 +4,8 @@
 
 <!--La Navbar  -->
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">GRH</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{route('ResponsableRH')}}">Home</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Employés
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item " href="{{route('ListeEmploye')}}">Liste</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeContrat')}}">Contrat</a></li>
-            <li><a class="dropdown-item" href="{{route('ListeCandidature')}}">Candidature</a></li>
-            <li><a class="dropdown-item " href="{{route('ListePoste')}}">Postes</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeConge')}}">Congé</a></li>
+@include('navbar')
 
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Carrières
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item  " href="{{route('ListePromotion')}}">Promotion</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeFormation')}}">Formation</a></li>
-
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{route('ListeDepartement')}}">Départements</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stages
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item disabled" href="/ResponsableRH/Stage">Gestion de Stages</a></li>
-            <li><a class="dropdown-item" href="#">Demande de Stage</a></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
 
   <!--Catch De Succès -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -70,30 +22,33 @@
     </div>
 </div>
   
-  <!--Catch D'erreur  -->
+<!--Catch D'erreur  -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="toastError" class="toast " role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <strong class="me-auto">Alert</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body">
-        @if ($errors->any())
-          <ul>
-            @foreach ($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        @endif
-      </div>
+  <div id="toastError" class="toast " role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Alert</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
+    <div class="toast-body">
+      @if ($errors->any())
+        <ul>
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      @elseif(session('error'))
+      <p>{{session('error')}}</p>
+
+      @endif
+    </div>
+  </div>
 </div>
 
   <!--Partie situé en bas de la navbar  -->
-
+<br>
 <div class="row justify-content-center">
-    <div class="col-1" >
-      <button type="button" class="btn  btn-primary w-100 " data-bs-toggle="modal" data-bs-target="#modalformStage" style="height: 60px">
+    <div class="col-2">
+      <button type="button" class="btn  btn-outline-success w-100 " data-bs-toggle="modal" data-bs-target="#modalformStage" style="height: 60px">
           Ajouter un Stage &rarr;
       </button>
       <hr>
@@ -215,7 +170,7 @@
         <div class="modal-body">
           <form method="POST" action="{{route('createStage')}}">
             @csrf
-            <p class="lead">Informations sur le Poste:</p> 
+            <p class="lead">Informations sur le Stage:</p> 
             <div class="container">
                 <div class="row">                
                     <select name="typestage_id" disabled id="typestage_id" class="form-select" >
@@ -304,10 +259,13 @@
   </div>  
 
   <!--Body-->
+  <div class="container mt-2">
+    <div class="card shadow-lg w-100">
+      <div class="card-body">
 <div class="row" style="--bs-gutter-x:0.75rem;--bs-gutter-y:10">
   @foreach($stages as $stage)
-  <div class="col-3 ">
-    <div class="card">
+  <div class="col-4 d-flex ">
+    <div class="card w-100">
       <div class="card-body">
         <h5 class="card-title">{{$stage->typestage->NomTypeStage}}</h5>
         <h6 class="card-subtitle mb-1 text-body-secondary">ID:{{$stage->idStage}}</h6>
@@ -316,20 +274,26 @@
         <h6 class="card-subtitle mb-1 text-body-secondary">Description:</h6>
         <p class="text-body-seconday">{{$stage->Desc}}</p>
         @endif
-        
-      <a class="float-end btn btn-success" id="modifierStage" data-bs-toggle="modal" data-bs-target="#modalformStageEdit" data-stage="{{$stage->idStage}}" ><img src="/bootstrap-icons/icons/pencil.svg" style="height: 80%"> </a> 
+        <div class="card-footer mt-auto">
+          <div class="d-flex justify-content-between">
+      <a class="float-end btn btn-outline-success" id="modifierStage" data-bs-toggle="modal" data-bs-target="#modalformStageEdit" data-stage="{{$stage->idStage}}" ><img src="/bootstrap-icons/icons/pencil.svg" style="height: 60%">Modifier </a> 
       <form action="{{route('deleteStage',['stage'=>$stage])}}" method="POST">
         @csrf
         @method('delete')
-      <button class="float-end btn btn-danger"><img src="/bootstrap-icons/icons/x-lg.svg" style="height: 80%"> </button>
+      <button class="float-end btn btn-outline-danger"><img src="/bootstrap-icons/icons/x-lg.svg" style="height: 80%">Supprimer </button>
       </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   @endforeach
 </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      </div>
+    </div>
+  </div>
+@extends('script')
+@section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
       const toastSuccess = document.getElementById('toastSuccess');
@@ -342,13 +306,11 @@
             bsToast.show();
         @endif
         // Vérifier si la session contient un message d'erreur 
-        @if ($errors->any())
+        @if ($errors->any() || session('error'))
             // Sélectionner le toast et le montrer
             var bsToast = new bootstrap.Toast(toastError);
             bsToast.show();
-        @endif        
-        
-    });
+        @endif }); 
     function toggleLink() {
         var checkbox = document.getElementById("disable");
         var link = document.getElementById("addTypeLink");
@@ -389,9 +351,13 @@
 
     });
     $('#modifierStageBtn').on('click', function() {
-        var action;
         var action = "{{ route('editStage', ':stageId') }}".replace(':stageId', stageId);
         $('#formModifierStage').attr('action',action);
         console.log(action);
     });
+    $(document).ready(function () {
+        $('#stage').addClass('nav-link disabled');
+    });
 </script>
+@endsection
+@endsection

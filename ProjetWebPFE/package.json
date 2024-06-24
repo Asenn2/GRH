@@ -6,6 +6,7 @@
         "build": "vite build"
     },
     "devDependencies": {
+        "@vue/compiler-sfc": "^3.4.27",
         "axios": "^1.6.4",
         "laravel-vite-plugin": "^1.0",
         "prettier": "3.2.5",
@@ -14,7 +15,10 @@
     "dependencies": {
         "@fullcalendar/core": "^6.1.11",
         "@fullcalendar/multimonth": "^6.1.11",
+        "@vitejs/plugin-vue": "^5.0.5",
         "bootstrap-icons": "^1.11.3",
-        "fullcalendar": "^6.1.11"
+        "fullcalendar": "^6.1.11",
+        "vue": "^3.4.27",
+        "vue-loader": "^17.4.2"
     }
 }

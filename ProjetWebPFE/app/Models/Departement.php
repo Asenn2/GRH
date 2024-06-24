@@ -20,14 +20,16 @@ class Departement extends Model
         'photo'
     ];
 
-            //Clé étrangère ailleurs :
-            
-    public function stage(){
+    //Clé étrangère ailleurs :
+
+    public function stage()
+    {
 
         return $this->hasMany(Stage::class);
     }
-    public function employes(){
+    public function employes()
+    {
 
-        return $this->hasMany(Employe::class);
+        return $this->hasMany(Employe::class, 'idDepartement');
     }
 }

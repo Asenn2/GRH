@@ -26,4 +26,9 @@ class Formation extends Model
     {
         return $this->hasMany(Promotion::class);
     }
+
+    public function demandeF()
+    {
+        return $this->hasMany(DemandeFormation::class, 'Formation');
+    }
 }

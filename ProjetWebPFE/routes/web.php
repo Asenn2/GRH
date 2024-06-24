@@ -3,6 +3,7 @@
 use App\Http\Controllers\DataBaseController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\WordToPdfController;
+use App\Http\Middleware\RoleAdmin;
 use App\Http\Middleware\RoleEmploye;
 use App\Http\Middleware\RoleRH;
 use App\Models\Departement;
@@ -31,7 +32,7 @@ Route::get('/registration', function () {
 Route::post('/registration', [LogController::class, "registrationpost"])->name('registration.post');
 
 //
-
+//Partie pour demander un Stage
 Route::delete('/logout', [LogController::class, "logout"])->name('logout');
 
 Route::get('/Stage', [DataBaseController::class, "ListStage"])->name('ListStage');
@@ -39,18 +40,8 @@ Route::get('/Stage', [DataBaseController::class, "ListStage"])->name('ListStage'
 Route::get('/Stage/{id}', [DataBaseController::class, "StageForm"])->name('StageForm');
 
 Route::post('/Stage/{id}/Send', [DataBaseController::class, 'ajouterDemandeStage'])->name('ajouterDemandeStage');
-
-Route::get('/admin', [DataBaseController::class, 'adminPannel'])->name('adminPannel');
-
-Route::get('/admin/create', [DataBaseController::class, 'adminCreate'])->name('adminCreate');
-
-Route::get('/admin/{id}/edit', [DataBaseController::class, 'adminEditForm'])->name('adminEditForm');
-
-Route::get('/admin/{id}/update', [DataBaseController::class, 'adminUpdate'])->name('adminUpdate');
-
-Route::delete('/admin/{id}', [DataBaseController::class, 'adminDelete'])->name('adminDelete');
-
-//ListeOffreEmploi Vue
+//
+//Partie pour afficher les Offres d'Emploi
 
 Route::get('/OffreEmploi', [DataBaseController::class, "CollecteOffreEmploi1"])->name('ListeOffreEmploi1');
 Route::get('/Postuler/{id}', function ($id) {
@@ -58,9 +49,22 @@ Route::get('/Postuler/{id}', function ($id) {
 })->name('PostulerForm');
 Route::post('/Postuler/{id}', [DataBaseController::class, "ajouterCandidature"])->name('ajouterCandidature');
 //
+
+Route::middleware([RoleAdmin::class])->group(function () {
+
+    Route::get('/admin', [DataBaseController::class, 'adminPannel'])->name('adminPannel');
+
+    Route::post('/admin/create', [DataBaseController::class, 'adminCreate'])->name('adminCreate');
+
+    Route::get('/admin/{id}/edit', [DataBaseController::class, 'adminEditForm'])->name('adminEditForm');
+
+    Route::put('/admin/{id}/update', [DataBaseController::class, 'adminUpdate'])->name('adminUpdate');
+
+    Route::delete('/admin/{id}', [DataBaseController::class, 'adminDelete'])->name('adminDelete');
+});
+
 Route::middleware([RoleEmploye::class])->group(function () {
 
-    //EmployeHome Vue
     Route::get('/Employe/{id}', [DataBaseController::class, "EmployeHome"])->name("EmployeHome");
 
     Route::get('/Employe/{id}/Info', [DataBaseController::class, "InfosPers"])->name("InfosPers");
@@ -73,11 +77,11 @@ Route::middleware([RoleEmploye::class])->group(function () {
 
     Route::get('/Employe/{id}/Promotion', [DataBaseController::class, 'PromotionEmploye'])->name('PromotionEmploye');
 
+    Route::put('/Employe/{id}/Presence/{action}', [DataBaseController::class, 'PresenceEmploye'])->name('PresenceEmploye');
+
     Route::get('/Employe/{id}/demandeFormation/{idF}', [DataBaseController::class, 'DemandeFormation'])->name('DemandeFormation');
 
     Route::get('/Employe/{id}/demandePromotion/{idP}', [DataBaseController::class, 'DemandePromotion'])->name('DemandePromotion');
-
-    //
 });
 
 Route::middleware([RoleRH::class])->group(function () {
@@ -86,7 +90,11 @@ Route::middleware([RoleRH::class])->group(function () {
 
     // Retourne Vue avec Employé et Departement
 
-    Route::get('/ResponsableRH', [DataBaseController::class, "CollecteEmployeetDepartement"])->name('ResponsableRH')->middleware(RoleRH::class);
+    Route::get('/ResponsableRH', [DataBaseController::class, "CollecteEmployeetDepartement"])->name('ResponsableRH');
+
+    Route::post('/taches', [DataBaseController::class, "creerTache"])->name('creerTache');
+
+    Route::post('/Annonce', [DataBaseController::class, "creerAnnonce"])->name("creerAnnonce");
 
     //
 
@@ -102,6 +110,8 @@ Route::middleware([RoleRH::class])->group(function () {
 
     // Modifie un employé rempli dans le formulaire
     Route::put('/ResponsableRH/Employé/{id}/update', [DataBaseController::class, 'updateemp'])->name('employe.update');
+
+    Route::get('/FicheEmploye/{id}', [DataBaseController::class, 'FicheEmploye'])->name('FicheEmploye');
 
 
     // Rempli le formulaire avec les données de l'employé a modifier
@@ -122,10 +132,13 @@ Route::middleware([RoleRH::class])->group(function () {
     Route::get('/ResponsableRH/Contrat', [DataBaseController::class, "CollecteContrat"])->name('ListeContrat');
 
     //Crée le contrat et le stock en format word dans Public
-    Route::post('/ResponsableRH/Contrat', [DataBaseController::class, "createContratCDD"])->name('createContrat');
+    Route::post('/ResponsableRH/Contrat', [DataBaseController::class, "createContrat"])->name('createContrat');
 
     //Crée le type de contrat 
     Route::post('/ResponsableRH/typeContrat', [DataBaseController::class, "createTypeContrat"])->name('createTypeContrat');
+
+    //Crée le type de contrat 
+    Route::delete('/ResponsableRH/Contrat/{id}/delete', [DataBaseController::class, "deleteContrat"])->name('deleteContrat');
 
     //Converti le word lié au contrat dans la table en pdf et le stock dans Public
     Route::get('/convert-word-to-pdf/{id}', [WordToPdfController::class, 'convertWordToPdf'])->name('wordtopdf');
@@ -158,6 +171,9 @@ Route::middleware([RoleRH::class])->group(function () {
     Route::get('/Candidat/{id}', [WordToPdfController::class, 'afficherCv'])->name('afficher_cv');
 
     Route::delete('/Candidature/{idcandidature}', [DataBaseController::class, "deleteCandidature"])->name('DeleteCandidature');
+
+    Route::get('/Rendez-vous/{mail}/{id}', [DataBaseController::class, 'proposerRendezVous'])->name('proposerRendezVous');
+
     //  
 
     //Promotion Vue
@@ -167,6 +183,14 @@ Route::middleware([RoleRH::class])->group(function () {
 
     //Crée une promotion
     Route::post('/ResponsableRH/Promotion', [DataBaseController::class, "CreatePromotion"])->name('CreatePromotion');
+
+    Route::get('/ResponsableRH/DemandePromo/{DemandePromotion}/{action}', [DataBaseController::class, 'modifierDPromotion'])->name('modifierDPromotion');
+
+    //
+
+    //ListeElligible
+    Route::get('/ResponsableRH/ListeElligible', [DataBaseController::class, "ListeElligible"])->name('ListeElligible');
+
     //
 
     //Poste Vue
@@ -179,6 +203,9 @@ Route::middleware([RoleRH::class])->group(function () {
 
     //Supprimer un poste
     Route::delete('/ResponsableRH/Poste/{id}/delete', [DataBaseController::class, 'deletePoste']);
+
+    //Modifie un poste
+    Route::put('/ResponsableRH/Poste/{id}/update', [DataBaseController::class, 'modifierPoste'])->name('modifierPoste');
     //
 
     //Departement Vue
@@ -237,6 +264,11 @@ Route::middleware([RoleRH::class])->group(function () {
 
     Route::get('/ResponsableRH/Stage/{id}', [DataBaseController::class, "showStage"])->name('Stage.show');
 
+    //Demande Stage
+
+    Route::get('/ResponsableRH/DemandeStage', [DataBaseController::class, 'DemandeStage'])->name('ListeDemandeStage');
+
+    Route::post('/ResponsableRH/StageDemande/{id}/{action}', [DataBaseController::class, 'modifierStageDemande'])->name('modifierStageDemande');
 
     //
 
@@ -255,6 +287,8 @@ Route::middleware([RoleRH::class])->group(function () {
     Route::post('/ResponsableRH/Conge/create', [DataBaseController::class, 'createCongeAnnuel'])->name('createCongeAnnuel');
 
     Route::get('/events', [DataBaseController::class, 'eventsConge'])->name('eventsConge');
+
+    Route::get('/ResponsableRH/DemandeConge/{demande}/{action}', [DataBaseController::class, 'modifierDemande'])->name('modifierDemande');
     //
 
     //Formation Vue
@@ -268,7 +302,18 @@ Route::middleware([RoleRH::class])->group(function () {
     //Supprime une Formation
     Route::delete('/ResponsableRH/Formation/{id}/delete', [DataBaseController::class, 'DeleteFormation'])->name('DeleteFormation');
 
-    Route::delete('/ResponsableRH/Formatioeeen/', [DataBaseController::class, 'DeleteFormation'])->name('test');
+    //Modifie un Formation
+    Route::put('/ResponsableRH/Formation/{id}/update', [DataBaseController::class, 'modifierFormation'])->name('modifierFormation');
+
+
+    Route::get('/ResponsableRH/DemandeFormation/{DemandeFormation}/{action}', [DataBaseController::class, 'modifierDemandeFormation'])->name('modifierDemandeFormation');
 
     //
 });
+
+Route::get('/HomeStagiaire/{id}', [DataBaseController::class, 'homeStagiaire'])->name('homeStagiaire');
+Route::get('/Manager/{id}/Stage', [DataBaseController::class, 'StagiaireProgress'])->name('StagiaireProgress');
+Route::post('/Manager/{id}/tache/{idS}', [DataBaseController::class, 'attribuerTache'])->name('attribuerTache');
+Route::get('/tache/{id}/{action}/{idEmp}', [DataBaseController::class, 'TacheStagiaireGestion'])->name('TacheStagiaireGestion');
+Route::get('/InfosStage/{id}', [DataBaseController::class, 'InfosStage'])->name('InfosStagiaire');
+Route::get('/AttestationTravail/{id}', [DataBaseController::class, 'AttestationTravail'])->name('AttestationTravail');

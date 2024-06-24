@@ -17,6 +17,7 @@ class DemandeStage extends Model
         'idStage',
         'idStageCandidat',
         'Motivation',
+        'status'
 
     ];
 

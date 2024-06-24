@@ -10,6 +10,7 @@ class Tache extends Model
     use HasFactory;
 
     protected $table = 'tache';
+    public $timestamps = false;
 
     protected $primaryKey = 'idTache';
 

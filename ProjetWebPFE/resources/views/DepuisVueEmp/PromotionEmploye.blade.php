@@ -4,50 +4,23 @@
 
 <!--La Navbar  -->
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand disabled" href="{{route('InfosPers', ['id' => $employe->idEmploye] )}}"><img src="/bootstrap-icons/icons/file-earmark-person.svg" style="height: 100%"> {{$employe->nom}}  {{ $employe->prenom }}</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("EmployeHome", ['id' => $employe->idEmploye]) }}">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("DemandeConge",['id'=>$employe->idEmploye]) }}">Demande de Congé</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{{ route("FormationEmploye",['id'=>$employe->idEmploye]) }}">Formations</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" aria-current="page" href="{{ route("PromotionEmploye",['id'=>$employe->idEmploye]) }}">Promotions</a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('login') }}">
-              <img src="/bootstrap-icons/icons/door-closed-fill.svg" style="height: 80%">
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-</nav>
+@include('navbarEmp')
 
 
 
   <div class="pt-4">
-    <button data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style="" class="btn btn-info ms-3   ">
+    <button data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style="" class="btn btn-outline-info ms-3   ">
       Requete Promotions &rarr;
     </button>
   </div>
 
   <!--Body-->
+  <div class="container mt-2">
+    <div class="card shadow-lg w-100">
+      <div class="card-body">
   <div class="row" style="--bs-gutter-x:0.75rem;--bs-gutter-y:10">
     @foreach($promotions as $promotion)
-    <div class="col-3 ">
+    <div class="col-4 ">
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">{{$promotion->poste->Fonction}}</h5>
@@ -68,7 +41,9 @@
     </div>
     @endforeach
 </div>
-
+      </div>
+    </div>
+  </div>
         <!--Liste des Promotions-->
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
@@ -81,7 +56,13 @@
     <p>Chaque Promotion nécessite une evaluation qui sera géré par le RH et peut nécessiter une Formation.</p>
    <ul class="list-group list-group-flush mt-2">
     @foreach($demandesPromotion as $demandePromotion)
-  <li class="list-group-item">{{ $demandePromotion->promotion->poste->Fonction }} &rarr; {{$demandePromotion->status}} </li>
+    @if($demandePromotion->status=="Accepté")
+  <li class="list-group-item text-success">{{ $demandePromotion->promotion->poste->Fonction }} &rarr; {{$demandePromotion->status}} </li>
+  @elseif($demandePromotion->status=="Refusé")
+  <li class="list-group-item text-danger">{{ $demandePromotion->promotion->poste->Fonction }} &rarr; {{$demandePromotion->status}} </li>
+@elseif($demandePromotion->status=="En cours")
+<li class="list-group-item text-secondary">{{ $demandePromotion->promotion->poste->Fonction }} &rarr; {{$demandePromotion->status}} </li>
+  @endif
   @endforeach
   </ul>
   </div>
@@ -121,9 +102,13 @@
     </div>
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+@extends('script')
+@section('scripts')
 
 <script>
+          $(document).ready(function () {
+        $('#Promotion').addClass('nav-link disabled');
+    });
   document.addEventListener('DOMContentLoaded', function () {
     const toastSuccess = document.getElementById('toastSuccess');
     const toastError = document.getElementById('toastError');
@@ -144,3 +129,5 @@
   });
              
 </script>
+@endsection
+@endsection

@@ -9,6 +9,8 @@ class Annonce extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $table = 'annonce';
 
     protected $primaryKey = 'id';
@@ -16,6 +18,5 @@ class Annonce extends Model
     protected $fillable = [
         'titre',
         'texte',
-        'expiration'
     ];
 }

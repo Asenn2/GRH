@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RDVMail;
 use App\Models\Annonce;
+use App\Models\Avantage;
 use App\Models\Candidat;
 use App\Models\Candidature;
 use App\Models\Conge;
@@ -19,7 +21,9 @@ use App\Models\Poste;
 use App\Models\Promotion;
 use App\Models\Stage;
 use App\Models\StageCandidat;
+use App\Models\Stagiaire;
 use App\Models\Tache;
+use App\Models\TacheStage;
 use App\Models\TypeConge;
 use App\Models\TypeContrat;
 use App\Models\TypeStage;
@@ -29,6 +33,8 @@ use PhpOffice\PhpWord\TemplateProcessor;
 use PhpOffice\PhpWord\Shared\ZipArchive;
 use DateTime;
 use Dompdf\Dompdf;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class DataBaseController extends Controller
 {
@@ -39,39 +45,74 @@ class DataBaseController extends Controller
     public function CollecteEmployeetDepartement()
     {
         $employe = Employe::all();
-        $departement = Departement::all();
+        $nbremploye = Employe::all()->count();
+        $nbrpostes = Poste::all()->count();
         $postes = Poste::all();
+        $nbrOffreEmploi = OffreEmploi::all()->count();
         $typecontrats = TypeContrat::all();
-        return view('VueResponsableRH', ['employés' => $employe, 'departements' => $departement, 'postes' => $postes, 'typecontrats' => $typecontrats]);
-    }
-
-    // Recherche un employé et le retourne a la vue ResponsableRH
-
-    public function RechercheEmployé(Request $request)
-    {
-        $request->validate([
-            'rechercheemp' => 'required'
-        ]);
-        $rechercheemp = $request->rechercheemp;
-
-        $employé = Employe::where('nom', $rechercheemp)->get();
         $departements = Departement::all();
-        return view('VueResponsableRH', ['employés' => $employé, 'departements' => $departements]);
+        $employesParDepartement = [];
+
+        foreach ($departements as $departement) {
+            $employes = Employe::where('idDepartement', $departement->idDepartement)->count();
+            $employesParDepartement[$departement->nom] = $employes;
+        }
+
+        $nbrDemandeF = DemandeFormation::all()->count();
+        $nbrDemandeP = DemandePromotion::all()->count();
+        $nbrDemandeS = DemandeStage::all()->count();
+
+        $demandespartype = [
+            'Formation' => $nbrDemandeF,
+            'Promotion' => $nbrDemandeP,
+            'Stage' => $nbrDemandeS,
+        ];
+
+        return view('VueResponsableRH', [
+            'employés' => $employe, 'departements' => $departements, 'postes' => $postes, 'typecontrats' => $typecontrats,
+            'nombreEmployes' => $nbremploye,
+            'nombreOffresEmploi' => $nbrOffreEmploi,
+            'nombrePostes' => $nbrpostes,
+            'employesParDepartement' => $employesParDepartement,
+            'demandespartype' => $demandespartype
+        ]);
     }
 
-    // Recherche un département et le retourne a la vue ResponsableRH
-
-    public function Recherchedépartement(Request $request)
+    public function creerTache(Request $request)
     {
         $request->validate([
-            'recherchedepart' => 'required'
-        ]);
-        $recherchedepart = $request->recherchedepart;
+            'titre' => 'required',
+            'Description' => 'required',
+            'employe' => 'required',
+            'DateEcheance' => 'required|date|after:today',
 
-        $departements = Departement::where('nom', $recherchedepart)->get();
-        $employé = Employe::all();
-        return view('VueResponsableRH', ['employés' => $employé, 'departements' => $departements]);
+        ]);
+        $tache = new Tache();
+        $tache->titre = $request->titre;
+        $tache->Description = $request->Description;
+        $tache->idEmploye = $request->input('employe');
+        $tache->dateecheance = $request->DateEcheance;
+        $tache->save();
+
+        return redirect()->route('ResponsableRH')->with('success', 'Tache Comfirmé');
     }
+
+    public function creerAnnonce(Request $request)
+    {
+        $request->validate([
+            'titre' => 'required',
+            'texte' => 'required',
+        ]);
+        $annonce = new Annonce();
+        $annonce->titre = $request->titre;
+        $annonce->texte = $request->texte;
+        $annonce->save();
+
+        return redirect()->route('ResponsableRH')->with('success', 'Annonce Comfirmé');
+    }
+
+
+
     //
 
     //Employe Vue
@@ -79,12 +120,24 @@ class DataBaseController extends Controller
     {
         $employe = Employe::where('idEmploye', $id)->first();
         $conges = Conge::where('idEmploye', $id)
-            ->orWhere('status', 'Approuvé')
+            ->orWhere('status', 'Accepté')
             ->orWhere('TypeConge', 1)
             ->get();
         $taches = Tache::where('idEmploye', $id)->get();
         $annonces = Annonce::all();
         return view('VueEmployeHome', ['employe' => $employe, 'annonces' => $annonces, 'conges' => $conges, 'taches' => $taches]);
+    }
+
+    public function PresenceEmploye($id, $action)
+    {
+        $employe = Employe::where('idEmploye', $id)->first();
+        if ($action == "devientPlusPresent") {
+            $employe->Etat = "Inactif";
+        } elseif ($action == "devientPresent") {
+            $employe->Etat = "Actif";
+        }
+        $employe->update();
+        return  redirect()->route('EmployeHome', ['id' => $id]);
     }
 
     public function InfosPers($id)
@@ -95,7 +148,7 @@ class DataBaseController extends Controller
 
     public function DemandeConge($id)
     {
-        $typeConges = TypeConge::all();
+        $typeConges = TypeConge::where('idTypeConge', '!=', 1)->get();
         $employe = Employe::where('idEmploye', $id)->first();
         $conges = Conge::where('idEmploye', $id)->get();
         return view("DepuisVueEmp.DemandeConge", ['typeConges' => $typeConges, 'employe' => $employe, 'conges' => $conges]);
@@ -132,7 +185,6 @@ class DataBaseController extends Controller
 
     public function DemandeFormation($id, $idF)
     {
-        $employe = Employe::where('idEmploye', $id)->first();
         $formation = Formation::where('idFormation', $idF)->first();
         $demandeformation = new DemandeFormation();
         $demandeformation->Employe = $id;
@@ -184,15 +236,16 @@ class DataBaseController extends Controller
             'nom' => 'required',
             'prenom' => 'required',
             'mail' => 'email',
-            'Cv' => 'required|mimes:docx|max:2048'
+            'Cv' => 'required|mimes:pdf|max:2048'
         ]);
         $candidat = new StageCandidat();
         $candidat->nom = $request->nom;
         $candidat->prenom = $request->prenom;
         $candidat->Mail = $request->Mail;
 
-        $file_name = time() . $request->file('Cv')->getClientOriginalName();
-        $path = $request->file('Cv')->storeAs('Cv', $file_name, 'public');
+        $file_name = uniqid() . $request->file('Cv')->getClientOriginalName();
+        $path = $request->file('Cv')->storeAs('DemandeStage/Cv', $file_name, 'public');
+        //        dd(url('public/' . $path));
         $candidat->Cv = $path;
         $candidat->save();
 
@@ -202,6 +255,67 @@ class DataBaseController extends Controller
         $candidature->Motivation = $request->Motivation;
         $candidature->save();
         return redirect(route('ListStage'))->with("success", "Demande envoyée");
+    }
+
+    public function modifierStageDemande($id, $action, Request $request)
+    {
+        // Trouver la demande de promotion
+        $demandee = DemandeStage::findOrFail($id);
+
+        // Vérifier l'action et mettre à jour le statut en conséquence
+        if ($action == 'Refuser') {
+            $demandee->update(['status' => 'Refusé']);
+        } elseif ($action == 'Accepter') {
+            $demandee->update(['status' => 'Accepté']);
+            $request->validate([
+                'DateDebutStage' => 'required',
+                'DateFinStage' => 'required'
+            ]);
+            $data = [
+                'DebutStage' => $request->DateDebutStage,
+                'FinStage' => $request->DateFinStage,
+                'NomStagiaire' => $demandee->stagecandidat->nom,
+                'PrenomStagiaire' => $demandee->stagecandidat->prenom,
+                'Mail' => $demandee->stagecandidat->Mail,
+                'idStage' => $demandee->idStage
+            ];
+            Stagiaire::create($data);
+            login_table::create([
+                'email' => $demandee->stagecandidat->Mail,
+                'password' => $demandee->stagecandidat->nom . '123',
+                'role' => 'Stagiaire'
+            ]);
+        } else {
+            return redirect(route('ListeDemandeStage'))->with('error', 'Action invalide.');
+        }
+
+        // Rediriger avec un message de succès
+        return redirect(route('ListeDemandeStage'))->with('success', 'Stagiaire ajouté avec succès.');
+    }
+
+    public function proposerRendezVous($mail, $id)
+    {
+        try {
+            // Envoi de l'e-mail
+            Mail::to($mail)->send(new RDVMail());
+
+            // Mise à jour de la candidature
+            $candidature = Candidature::findOrFail($id);
+            $candidature->status = "Accepte";
+            $candidature->update();
+
+            return redirect()->route('ListeCandidature')->with('success', 'Rendez-vous envoyé');
+        } catch (\Exception $e) {
+            // Retourne un message d'erreur pour débogage
+            return redirect()->route('ListeCandidature')->with('error', 'Erreur: ' . $e->getMessage());
+        }
+    }
+
+    public function ListeElligible()
+    {
+        $formations = Formation::all();
+        $promotions = Promotion::all();
+        return view('DepuisVueRH.ListeElligible', ['formations' => $formations, 'promotions' => $promotions]);
     }
 
     public function adminPannel()
@@ -236,10 +350,14 @@ class DataBaseController extends Controller
         $user = login_table::where('idEmploye', $id);
         $data = [
             'email' => $request->email,
-            'password' => $request->password,
             'role' => $request->role,
             'idEmploye' => $request->idEmploye,
         ];
+        $employe = Employe::where('idEmploye', $id)->first();
+        $employe->update(['mail' => $request->email]);
+        if ($request->password) {
+            $data['password'] = $request->password;
+        }
         $user->update($data);
         return redirect()->route('adminPannel')->with('success', 'Utilisateur Modifié');
     }
@@ -247,6 +365,7 @@ class DataBaseController extends Controller
     {
         $user = login_table::where('idlogin_table', $id);
         $user->delete();
+        return redirect()->route('adminPannel')->with('success', 'Utilisateur Supprimé');
     }
     //
 
@@ -314,10 +433,24 @@ class DataBaseController extends Controller
     }
     public function InfoDepartement($id)
     {
-        $dep = Departement::findOrFail($id);
-        $employes = Employe::where('idDepartement', $id)->get();
-        $nbr = $employes->count();
-        return view('DepuisVueRH.DepuisVueListeDepartement.Info', ['departement' => $dep, 'employes' => $employes, 'nbr' => $nbr]);
+        $departement = Departement::findOrFail($id);
+        $departements = Departement::all();
+        $employesParDepartement = [];
+
+        $nbremployes = Employe::where('idDepartement', $id)->count();
+        $nbremployesActifs = Employe::where('Etat', 'Actif')->count();
+        $nbrStageActifs = Stage::where('idDepartement', $id)->count();
+
+        $nbrF = Formation::where('Departement', $id)->count();
+        $nbrP = Promotion::where('Departement', $id)->count();
+        $nbrS = Stage::where('idDepartement', $id)->count();
+
+        $nbrtype = [
+            'Formation' => $nbrF,
+            'Promotion' => $nbrP,
+            'Stage' => $nbrS,
+        ];
+        return view('DepuisVueRH.DepuisVueListeDepartement.Info', ['departement' => $departement, 'nbremployesActifs' => $nbremployesActifs, 'nbrStageActifs' => $nbrStageActifs, 'nbremployes' => $nbremployes, 'employesParDepartement' => $employesParDepartement, 'nbrtype' => $nbrtype]);
     }
     public function searchInDepartement(Request $request)
     {
@@ -335,7 +468,7 @@ class DataBaseController extends Controller
 
     public function Collecte_Employe_Poste_Departement_Contrat()
     {
-        $employes = Employe::all();
+        $employes = Employe::with(['departement', 'poste'])->get();
         $postes = Poste::all();
         $departements = Departement::all();
         $contrats = Contrat::all();
@@ -375,6 +508,9 @@ class DataBaseController extends Controller
         $employe->Adresse = $request->input('Adresse');
         $employe->idDepartement = $request->input('departement_id');
         $employe->idPoste = $request->input('poste_id');
+        $employe->dateEmb = Carbon::now()->toDateString();
+        $employe->Etat = 'Inactif';
+
 
         $employe->save();
 
@@ -404,15 +540,15 @@ class DataBaseController extends Controller
             'DateNaiss' => $request->DateNaisss,
             'Num' => $request->Numm,
             'Adresse' => $request->Adressee,
-            'idDepartement' => $request->departementedit,
-            'idPoste' => $request->posteedit,
+            'idDepartement' => $request->input('departementedit'),
+            'idPoste' => $request->input('posteedit'),
         ];
 
 
 
         $employe->update($data);
 
-        return response()->json();
+        return redirect(route('ListeEmploye'))->with("success", "Employé modifié avec succès");
     }
 
     //Supprime l'employé
@@ -421,6 +557,44 @@ class DataBaseController extends Controller
         $employe->delete();
         return redirect(route('ListeEmploye'))->with('success', 'Employé supprimé.');
     }
+
+    public function FicheEmploye($id)
+    {
+        $employe = Employe::findOrFail($id);
+        return view('DepuisVueRH.DepuisVueListeEmploye.FicheEmploye', ['employe' => $employe]);
+    }
+    public function AttestationTravail($id)
+    {
+        $employe = Employe::where('idEmploye', $id)->first();
+        $templatePath = public_path('Attestation/modele.docx');
+
+        // Initialisez le modèle avec le chemin correct
+        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
+
+        $templateProcessor->setValue('{NomEmploye}', $employe->nom);
+        $templateProcessor->setValue('{PrenomEmploye}', $employe->prenom);
+        $templateProcessor->setValue('{DateNaiss}', $employe->DateNaiss);
+        $templateProcessor->setValue('{LieuNaiss}', $employe->LieuNaiss);
+        $templateProcessor->setValue('{Poste}', $employe->poste->Fonction);
+        $templateProcessor->setValue('{DateEmb}', $employe->dateEmb);
+
+        $docPath = public_path('Attestation/AttestationEmploye/attestation_' . uniqid() . '.docx');
+        $templateProcessor->saveAs($docPath);
+
+        $domPdfPath = base_path('vendor/dompdf/dompdf');
+
+        \PhpOffice\PhpWord\Settings::setPdfRendererPath($domPdfPath);
+        \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
+        $Content = \PhpOffice\PhpWord\IOFactory::load($docPath);
+        $PDFWriter = \PhpOffice\PhpWord\IOFactory::createWriter($Content, 'PDF');
+
+        $pdfFileName = time() . '.pdf';
+        $pdfpath = public_path('Attestation/AttestationEmploye/' . $pdfFileName);
+        $PDFWriter->save($pdfpath);
+
+        return redirect()->route('FicheEmploye', ['id' => $id, 'file' => $pdfpath]);
+    }
+
     //
 
     //OffreEmploi depuis le login
@@ -439,17 +613,20 @@ class DataBaseController extends Controller
             'nom' => 'required',
             'prenom' => 'required',
             'mail' => 'email',
-            'Cv' => 'required|mimes:docx|max:2048'
+            'Cv' => 'required|mimes:pdf|max:2048'
         ]);
         $candidat = new Candidat();
         $candidat->nom = $request->nom;
         $candidat->prenom = $request->prenom;
         $candidat->Mail = $request->Mail;
 
-        $file_name = time() . $request->file('Cv')->getClientOriginalName();
-        $path = $request->file('Cv')->storeAs('Cv', $file_name, 'public');
+        $fileName = 'cv_' . time() . '_' . uniqid() . '.' . $request->file('Cv')->getClientOriginalExtension();
+
+        $path = $request->file('Cv')->storeAs('Candidature/Cv', $fileName, 'public');
+        //dd(url($path));
         $candidat->Cv = $path;
         $candidat->save();
+
 
 
 
@@ -457,6 +634,7 @@ class DataBaseController extends Controller
         $candidature->idOffreEmploi = $id;
         $candidature->idCandidat = $candidat->idCandidat;
         $candidature->Motivation = $request->Motivation;
+        $candidature->status = 'En cours';
         $candidature->save();
         return redirect(route('ListeOffreEmploi1'))->with("success", "Candidature envoyée");
     }
@@ -471,7 +649,8 @@ class DataBaseController extends Controller
         $postes = Poste::all();
         $formations = Formation::all();
         $DemandePromotions = DemandePromotion::all();
-        return view('DepuisVueRH.ListePromotion', ['promotions' => $promotions, 'postes' => $postes, 'formations' => $formations, 'DemandePromotions' => $DemandePromotions]);
+        $Departements = Departement::all();
+        return view('DepuisVueRH.ListePromotion', ['promotions' => $promotions, 'Departements' => $Departements, 'postes' => $postes, 'formations' => $formations, 'DemandePromotions' => $DemandePromotions]);
     }
 
     //Crée une promotion
@@ -479,7 +658,8 @@ class DataBaseController extends Controller
     {
         $request->validate([
             'poste_id' => 'required',
-            'Commentaire' => 'required'
+            'Commentaire' => 'required',
+            'Departement' => 'required'
         ]);
 
         $promotion = new Promotion();
@@ -488,9 +668,29 @@ class DataBaseController extends Controller
             $promotion->Formation = $request->input('formation_id');
         }
         $promotion->Commentaire = $request->Commentaire;
+        $promotion->Departement = $request->input('Departement');
         $promotion->save();
         return redirect(route('ListePromotion'))->with('success', 'Nouveau Promotion Ajouté');
     }
+
+    public function modifierDPromotion($DemandePromotion, $action)
+    {
+        // Trouver la demande de promotion
+        $demandee = DemandePromotion::findOrFail($DemandePromotion);
+
+        // Vérifier l'action et mettre à jour le statut en conséquence
+        if ($action == 'Refuser') {
+            $demandee->update(['status' => 'Refusé']);
+        } elseif ($action == 'Approuver') {
+            $demandee->update(['status' => 'Accepté']);
+        } else {
+            return redirect(route('ListePromotion'))->with('error', 'Action invalide.');
+        }
+
+        // Rediriger avec un message de succès
+        return redirect(route('ListePromotion'))->with('success', 'Demande modifiée avec succès.');
+    }
+
     //
 
     //Formation Vue
@@ -499,7 +699,9 @@ class DataBaseController extends Controller
     public function ListeFormation()
     {
         $formations = Formation::all();
-        return view('DepuisVueRH.ListeFormation', ['formations' => $formations]);
+        $demandeFormations = DemandeFormation::all();
+        $Departements = Departement::all();
+        return view('DepuisVueRH.ListeFormation', ['formations' => $formations, 'DemandeFormations' => $demandeFormations, 'Departements' => $Departements]);
     }
 
     //Retourne Formation
@@ -511,13 +713,14 @@ class DataBaseController extends Controller
             'DureeHeure' => 'required',
             'Format' => 'required',
             'Objectif' => 'required',
+            'Departement' => 'required'
 
         ]);
         Formation::create($request->all());
         return redirect(route('ListeFormation'))->with('success', 'Nouveau Promotion Ajouté');
     }
 
-    //Supprimer un Poste
+    //Supprimer un Formation
     public function DeleteFormation($id)
     {
         $Formation = Formation::findOrFail($id);
@@ -527,6 +730,38 @@ class DataBaseController extends Controller
         } else {
             return redirect(route('ListeFormation'))->with('error', 'Erreur lors de l\'ajout du Formation ');
         }
+    }
+    //Modifier un Formation
+    public function modifierFormation($id, Request $request)
+    {
+        $data = $request->validate([
+            'NomFormation' => 'required',
+            'DateFormation' => 'required',
+            'DureeHeure' => 'numeric',
+            'Format' => 'required',
+            'Objectif' => 'required'
+        ]);
+        $formation = Formation::findOrFail($id);
+        $formation->update($data);
+        return redirect(route('ListeFormation'))->with('success', 'Formation Modifié');
+    }
+
+    public function modifierDemandeFormation($DemandeFormation, $action)
+    {
+        // Trouver la demande de promotion
+        $demandee = DemandeFormation::findOrFail($DemandeFormation);
+
+        // Vérifier l'action et mettre à jour le statut en conséquence
+        if ($action == 'Refuser') {
+            $demandee->update(['status' => 'Refusé']);
+        } elseif ($action == 'Approuver') {
+            $demandee->update(['status' => 'Accepté']);
+        } else {
+            return redirect(route('ListeFormation'))->with('error', 'Action invalide.');
+        }
+
+        // Rediriger avec un message de succès
+        return redirect(route('ListeFormation'))->with('success', 'Demande de Formation modifiée avec succès.');
     }
     //
 
@@ -567,6 +802,24 @@ class DataBaseController extends Controller
         } else {
             return redirect(route('ListePoste'))->with('error', 'Erreur lors de l\'ajout du Poste ');
         }
+    }
+
+    //Modifier un poste
+    public function modifierPoste($id, Request $request)
+    {
+        $data = $request->validate([
+            'Fonctionedit' => 'required',
+            'AdresseLieuTravailedit' => 'required',
+            'Salaireedit' => 'numeric',
+            'Descedit' => 'nullable'
+        ]);
+        $poste = Poste::findOrFail($id);
+        $poste->Fonction = $request->Fonctionedit;
+        $poste->AdresseLieuTravail = $request->AdresseLieuTravailedit;
+        $poste->Salaire = $request->Salaireedit;
+        $poste->Desc = $request->Descedit;
+        $poste->update();
+        return redirect(route('ListePoste'))->with('success', 'Poste Modifier');
     }
     //    
 
@@ -618,37 +871,24 @@ class DataBaseController extends Controller
         $employes = Employe::all();
         $departements = Departement::all();
         $typecontrat = TypeContrat::all();
-        return view('DepuisVueRH.ListeContrat', ['contrats' => $contrat, 'employes' => $employes, 'departements' => $departements, 'typecontrats' => $typecontrat]);
+        $postes = Poste::all();
+        $avantages = Avantage::all();
+        return view('DepuisVueRH.ListeContrat', ['contrats' => $contrat, 'employes' => $employes, 'departements' => $departements, 'typecontrats' => $typecontrat, 'postes' => $postes, 'avantages' => $avantages]);
     }
     //Méthode pour créer un contrat et son fichier word et l'ajouter à la table
 
-    public function createContratCDD(Request $request)
+    public function createContrat(Request $request)
     {
         $request->validate([
             'employe_id' => 'required',
-            'NomEmployeur' => 'required',
             'DebutContrat' => 'required',
             'DateFinContrat' => 'required',
-            'Fonction' => 'required',
-            'AdresseLieuTravail' => 'required',
-            'Salaire' => 'required',
-            'NombreHeuresTravail' => 'required',
-            'JourDebutSemaine' => 'required',
-            'JourFinSemaine' => 'required',
-            'HeureDebutJourneeTravail' => 'required',
-            'HeureFinJourneeTravail' => 'required',
-            'NombrejourCongeRemunere' => 'required',
-            'JourResiliation' => 'required',
+            'soldeCG' => 'required',
+            'dateResiliation' => 'required',
         ]);
         $dateRes = new DateTime($request->JourResiliation);
 
-        $poste = [
-            'Fonction' => $request->Fonction,
-            'AdresseLieuTravail' => $request->AdresseLieuTravail,
-            'Salaire' => $request->Salaire,
 
-        ];
-        Poste::create($poste);
         $idEmploye = $request->input('employe_id');
         $employe = Employe::findOrFail($idEmploye);
 
@@ -681,36 +921,39 @@ class DataBaseController extends Controller
         $templateProcessor->setValue('{DureeContrat}', $totalDays);
         $templateProcessor->setValue('{AdresseLieuTravail}', $request->AdresseLieuTravail);
         $templateProcessor->setValue('{Salaire}', $request->Salaire);
-        $templateProcessor->setValue('{NombreHeuresTravail}', $request->NombreHeuresTravail);
-        $templateProcessor->setValue('{JourDebutSemaine}', $request->JourDebutSemaine);
-        $templateProcessor->setValue('{JourFinSemaine}', $request->JourFinSemaine);
-        $templateProcessor->setValue('{HeureDebutJourneeTravail}', $request->HeureDebutJourneeTravail);
-        $templateProcessor->setValue('{HeureFinJourneeTravail}', $request->HeureFinJourneeTravail);
-        $templateProcessor->setValue('{NombrejourCongeRemunere}', $request->NombrejourCongeRemunere);
+        $templateProcessor->setValue('{NombrejourCongeRemunere}', $request->soldeCG);
         $templateProcessor->setValue('{JourResiliation}', $request->JourResiliation);
 
         // Chemin de stockage pour le contrat généré
         $docPath = public_path('Contrats/Contrat/contract_' . uniqid() . '.docx');
         $templateProcessor->saveAs($docPath);
 
-        $contrat = [
+        $cont = [
             'status' => 'En cours',
             'Employe' => $idEmploye,
-            'Conditions' => 1,
+            'Avantage' => 1,
             'Type' => 1,
+            'poste' => $request->input('poste_id'),
             'Debut' => $request->DebutContrat,
             'Fin' => $request->DateFinContrat,
+            'soldeCG' => $request->soldeCG,
             'DateResiliation' =>  $dateRes->format('Y-m-d'),
             'contratFile' => $docPath,
 
         ];
-        $cont = Contrat::create($contrat);
+        $contrat = Contrat::create($cont);
 
+        // Ajouter les avantages au contrat
+        if ($request->has('avantages')) {
+
+            $avantages = $request->avantages;
+            $contrat->avantages()->attach($avantages);
+        }
 
 
 
         // Retourner le chemin du contrat généré ou une redirection vers le contrat généré
-        return redirect(route('ListeContrat'));
+        return redirect(route('ListeContrat'))->with('success', 'Contrat ajouté');
     }
     public function createTypeContrat(Request $request)
     {
@@ -722,19 +965,24 @@ class DataBaseController extends Controller
         return redirect(route('ListeContrat'));
     }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        $contrats = Contrat::where('Employe', 'like', "%$query%")->get();
-
-        return response()->json($contrats);
-    }
 
     public function deleteTypeContrat(TypeContrat $typecontrat)
     {
+        $contrats = Contrat::where('Type', $typecontrat->idTypeContrat)->exists();
+        if ($contrats) {
+            return redirect(route('ListeContrat'))->with('error', 'Ce Type est utilisé par un contrat.');
+        }
 
         $typecontrat->delete();
         return redirect(route('ListeContrat'))->with('success', 'Type de Contrat supprimé.');
+    }
+
+    public function deleteContrat($id)
+    {
+        $contrat = Contrat::findOrFail($id);
+        $contrat->delete();
+
+        return redirect(route('ListeContrat'))->with('success', 'Contrat supprimé.');
     }
 
     //
@@ -810,18 +1058,28 @@ class DataBaseController extends Controller
         $stage->update($request->all());
         return redirect(route('ListeStage'))->with('success', 'Stage modifié avec Succès');
     }
+
+    //Demande Stage
+    public function DemandeStage()
+    {
+        $DemandeStages = DemandeStage::all();
+        return view('DepuisVueRH.ListeDemandeStage', ['DemandeStages' => $DemandeStages]);
+    }
+    //
     //
 
     //Congé
     public function ListeConge()
     {
         $typeconges = TypeConge::all();
-        $conges = Conge::all();
-        return view('DepuisVueRH.ListeConge', ['typeconges' => $typeconges, 'conges' => $conges]);
+        $conges = Conge::where('TypeConge', 1)->get();
+        $demandes = Conge::where('TypeConge', '!=', 1)->get();
+        return view('DepuisVueRH.ListeConge', ['typeconges' => $typeconges, 'conges' => $conges, 'demandes' => $demandes]);
     }
+
     public function eventsConge()
     {
-        $conges = Conge::all();
+        $conges = Conge::where('TypeConge', 1)->get();
         return response()->json($conges);
     }
 
@@ -844,7 +1102,7 @@ class DataBaseController extends Controller
     public function deleteTypeConge(TypeConge $typeconge)
     {
         $typeconge->delete();
-        return redirect(route('ListeConge'))->with('success', 'Type Ajouté avec Succès');
+        return redirect(route('ListeConge'))->with('success', 'Type supprimé avec Succès');
     }
 
     //Crée un Congé
@@ -864,5 +1122,101 @@ class DataBaseController extends Controller
         $Conge->save();
         return redirect(route('ListeConge'))->with('success', 'Conge Ajouté avec Succès');
     }
-    //    
+
+    public function modifierDemande($demande, $action)
+    {
+        if ($action == 'Refuser') {
+            $demandee = Conge::where('idConge', $demande)->first();
+            $data = [
+                'status' => 'Refusé'
+            ];
+            $demandee->update($data);
+        } elseif ($action == 'Approuver') {
+            $demandee = Conge::where('idConge', $demande)->first();
+            $data = [
+                'status' => 'Accepte'
+            ];
+            $demandee->update($data);
+        }
+        return redirect(route('ListeConge'))->with('success', 'Demande Modifié avec Succès');
+    }
+    //   
+
+    //HomeStagiaire
+    public function homeStagiaire($id)
+    {
+        $stagiaire = Stagiaire::where('Manager', $id)->first();
+        $tacheStage = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)->get();
+        $nbrTache = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)->count();
+        $nbrTacheTermine = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)
+            ->where('status', 'Termine')
+            ->count();
+        $nbrTachePasEncore = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)
+            ->where('status', 'Pas Encore')
+            ->count();
+        if ($nbrTache > 0) {
+            $progression = ($nbrTacheTermine / $nbrTache) * 100;
+        } else {
+            $progression = 0; // To avoid division by zero if no tasks are assigned
+        }
+
+        // Assign the calculated progression to the stagiaire object
+        $stagiaire->progression = $progression;
+        $stagiaire->save();
+        return view('HomeStagiaire', ['stagiaire' => $stagiaire, 'tacheStage' => $tacheStage]);
+    }
+
+    public function StagiaireProgress($id)
+    {
+        $stagiaire = Stagiaire::where('Manager', $id)->first();
+        $employe = Employe::where('idEmploye', $id)->first();
+        $tacheStage = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)->get();
+        $nbrTache = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)->count();
+        $nbrTacheTermine = TacheStage::where('idStagiaire', $stagiaire->idStagiaire)
+            ->where('status', 'Termine')
+            ->count();
+        if ($nbrTache > 0) {
+            $progression = ($nbrTacheTermine / $nbrTache) * 100;
+        } else {
+            $progression = 0; // To avoid division by zero if no tasks are assigned
+        }
+
+        // Assign the calculated progression to the stagiaire object
+        $stagiaire->progression = $progression;
+        return view('DepuisVueEmp.StagiaireProgress', ['stagiaire' => $stagiaire, 'employe' => $employe, 'tacheStage' => $tacheStage]);
+    }
+
+    public function attribuerTache($id, $idS, Request $request)
+    {
+        $stagiaire = Stagiaire::where('Manager', $id)->first();
+        $employe = Employe::where('idEmploye', $id)->first();
+        $tacheStage = new TacheStage();
+        $tacheStage->contenu = $request->contenu;
+        $tacheStage->idStagiaire = $idS;
+        $tacheStage->status = 'Pas Encore';
+        $tacheStage->save();
+        return redirect()->route('StagiaireProgress', ['id' => $employe->idEmploye]);
+    }
+    public function TacheStagiaireGestion($id, $action, $idEmp)
+    {
+        $tache = TacheStage::where('id', $id)->first();
+        if ($action == 'Termine') {
+            $data = [
+                'status' => 'Termine'
+            ];
+            $tache->update($data);
+        } elseif ($action == 'Pas Encore') {
+            $data = [
+                'status' => 'Pas Encore'
+            ];
+            $tache->update($data);
+        }
+        return redirect()->route('StagiaireProgress', ['id' => $idEmp]);
+    }
+
+    public function InfosStage($id)
+    {
+        $stagiaire = Stagiaire::where('idStagiaire', $id)->first();
+        return view('DepuisVueEmp.InfosStagiaire', ['stagiaire' => $stagiaire]);
+    }
 }

@@ -6,20 +6,24 @@
 
         <!--La navbar  -->
 
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <nav class="navbar navbar-expand-lg " style="background-color: rgb(86,127,167)">
             <div class="container-fluid">
               <a class="navbar-brand" href="#">GRH</a>
               <ul class="navbar-nav ms-auto  mb-2 mb-lg-0">
                 <li class="nav-item">
                   <a class="nav-link active" aria-current="page" href="{{route('ListeOffreEmploi1')}}">Espace candidature</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="{{route('ListStage')}}">Espace Stage</a>
-                </li>
                 <li class="nav-item ">
                   <a href="#" class="nav-link active" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     A propos
                   </a>
+                </li>
+                <li class="nav-item">
+                  <form action="{{route('logout')}}" method="post">
+                    @csrf
+                    @method('delete')
+                    <button><img src="/bootstrap-icons/icons/door-closed-fill.svg" style="height: 80%"></button>
+                  </form>
                 </li>
               </ul>
             </div>
@@ -28,7 +32,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card border rounded">
-                <div class="card-header">
+                <div class="card-header" style="background-color: rgb(86,127,167)">
                     <h1 class="h4">User Management</h1>
                 </div>
                 <div class="card-body">

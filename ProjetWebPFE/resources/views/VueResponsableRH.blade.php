@@ -1,199 +1,323 @@
 @extends('layout')
-@section('title','Login')
+@section('title', 'Dashboard')
 @section('content')
 
-<!--La Navbar  -->
+<!-- La Navbar -->
+@include('navbar')
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">GRH</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link disabled" aria-current="page" href="{{route('ResponsableRH')}}">Home</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Employés
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item " href="{{route('ListeEmploye')}}">Liste</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeContrat')}}">Contrat</a></li>
-            <li><a class="dropdown-item" href="{{route('ListeCandidature')}}">Candidature</a></li>
-            <li><a class="dropdown-item " href="{{route('ListePoste')}}">Postes</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeConge')}}">Congé</a></li>
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-body">
 
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Carrières
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item  " href="{{route('ListePromotion')}}">Promotion</a></li>
-            <li><a class="dropdown-item " href="{{route('ListeFormation')}}">Formation</a></li>
+            <!-- Partie située en bas de la navbar -->
+            <h6 class="text-center text-body-secondary my-4" style="text-decoration: underline">Services Rapides:</h6>
+            <div class="row justify-content-center mb-4">
+                <div class="col-12 d-flex justify-content-around">
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalAddJob">
+                        <i class="bi bi-plus-lg"></i> Ajouter une offre d'emploi
+                    </button>
+                    <a href="{{ route('ListeEmploye') }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-people"></i> Voir les employés
+                    </a>
+                    <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#modalAddTask">
+                        <i class="bi bi-card-checklist"></i> Ajouter une tâche
+                    </button>
+                    <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#modalAddAnnonce">
+                        <i class="bi bi-card-checklist"></i> Ajouter une Annonce
+                    </button>
+                </div>
+            </div>
+            <hr>
 
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{route('ListeDepartement')}}">Départements</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stages
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item " href="/ResponsableRH/Stage">Gestion de Stages</a></li>
-            <li><a class="dropdown-item" href="#">Demande de Stage</a></li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <form action="{{route('logout')}}" method="post">
-            @csrf
-            @method('delete')
-            <button><img src="/bootstrap-icons/icons/door-closed-fill.svg" style="height: 80%"></button>
-          </form>
-        </li>
-      </ul>
+            <!-- Widgets et graphiques pour des statistiques rapides -->
+            <div class="row text-center">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre d'employés</h5>
+                            <p class="display-4">{{ $nombreEmployes }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Offres d'emploi actives</h5>
+                            <p class="display-4">{{ $nombreOffresEmploi }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Nombre de poste </h5>
+                            <p class="display-4">{{ $nombrePostes }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <canvas id="emploisParDepartement"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <canvas id="demandespartype"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
-</nav>
-
-    <!--Partie situé en bas de la navbar  -->
-<h6 class="text-center text-body-secondary" style="text-decoration: underline">Services:</h6>
-<div class="row justify-content-center">
-  <div class="col-3" >
-    <button type="button" id="Départbtn" class="btn-lg  btn-primary w-100  " style="height: 50px">
-        <img src="/bootstrap-icons/icons/house.svg" style="height: 80%"> 
-        Départements
-      </button>
-    </div>
-  <div class="col-3">
-    <button type="button" id="Empbtn" class="btn-lg btn-primary w-100" style="height: 50px">
-      <img src="/bootstrap-icons/icons/file-person.svg" style="height: 30px">  
-      Employés
-    </button>
-  </div>
-  <div class="col-3">
-        <button type="button" class="btn-lg  btn-primary w-100  " data-bs-toggle="modal" data-bs-target="#modalform" style="height: 50px">
-          <img src="/bootstrap-icons/icons/plus.svg" style="height: 80%"> 
-            Ajouter une offre d'emploi
-        </button>
-  </div>
-</div>
-<hr>
-
-<!--Modal pour ajouter une offre d'emploi -->
-
-<div class="modal fade" id="modalform" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width: 100%" style="max-width: 2000px">
-  <div class="modal-dialog modal-dialog-scrollable">
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Ajout d'une offre d'emploi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-        <form method="POST" action="{{ route('storeoffreemploi') }}" >
-          @csrf
-              <!--Poste-->
-          <div class="row">
-              <div class="col">
-                  <select name="poste" class="form-select mb-3">
-                      <option value="">Sélectionner un poste</option>
-                      @foreach($postes as $poste)
-                          <option value="{{ $poste->idPoste }}">{{ $poste->Fonction }} </option>
-                      @endforeach
-                  </select>
-              </div>
-          </div>
-              <!--Departement-->
-          <div class="row">
-              <div class="col">
-                  <select name="departement" class="form-select mb-3">
-                      <option value="">Sélectionner un département</option>
-                      @foreach($departements as $departement)
-                          <option value="{{ $departement->idDepartement}}">{{ $departement->nom }} </option>
-                      @endforeach
-                  </select>
-              </div>
-          </div>
-              <!--TypeContrat-->
-           <div class="row">
-              <div class="col">
-                  <select name="typecontrat" class="form-select mb-3">
-                      <option value="">Sélectionner un type de contrat</option>
-                      @foreach($typecontrats as $typecontrat)
-                          <option value="{{ $typecontrat->idTypeContrat}}">{{ $typecontrat->NomTypeContrat }} </option>
-                      @endforeach
-                  </select>
-              </div>
-           </div>
-              <!--Informations Supplémentaire-->
-          <div class="row">
-              <p class="lead">Informations supplémentaire:</p>
-              <div class=" mb-1">
-                <label for="CompetenceRequise" class="form-label">Compétence Requise:</label>
-                <input type="text" class="form-control" id="CompetenceRequise" name="CompetenceRequise">
-              </div>
-              <label for="Commentaire" class="form-label">Commentaire :</label>
-              <textarea class="form-control" id="Commentaire" name="Commentaire" rows="4" placeholder="Saisissez votre commentaire ici"></textarea>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            <button type="submit" class="btn btn-primary">
-             Ajouter
-            </button>
-           </div>
-        </form>   
-      </div>
-
-    </div>
-  </div>
 </div>
 
+<div id="toastSuccess" class="toast text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+        <strong class="me-auto">Alert</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+        @if(session()->has('success'))
+            {{ session('success') }}
+        @endif
+    </div>
+</div>
 
+<div id="toastError" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+        <strong class="me-auto">Alert</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+        @if ($errors->any() || session('error'))
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <p>{{ session('error') }}</p>
+        @endif
+    </div>
+</div>
+<!-- Modal pour ajouter une offre d'emploi -->
+<div class="modal fade" id="modalAddJob" tabindex="-1" aria-labelledby="modalAddJobLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajout d'une offre d'emploi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ route('storeoffreemploi') }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="poste" class="form-label">Poste</label>
+                        <select name="poste" class="form-select">
+                            <option value="">Sélectionner un poste</option>
+                            @foreach($postes as $poste)
+                                <option value="{{ $poste->idPoste }}">{{ $poste->Fonction }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departement" class="form-label">Département</label>
+                        <select name="departement" class="form-select">
+                            <option value="">Sélectionner un département</option>
+                            @foreach($departements as $departement)
+                                <option value="{{ $departement->idDepartement }}">{{ $departement->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="typecontrat" class="form-label">Type de Contrat</label>
+                        <select name="typecontrat" class="form-select">
+                            <option value="">Sélectionner un type de contrat</option>
+                            @foreach($typecontrats as $typecontrat)
+                                <option value="{{ $typecontrat->idTypeContrat }}">{{ $typecontrat->NomTypeContrat }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="CompetenceRequise" class="form-label">Compétence Requise</label>
+                        <input type="text" class="form-control" id="CompetenceRequise" name="CompetenceRequise">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Commentaire" class="form-label">Commentaire</label>
+                        <textarea class="form-control" id="Commentaire" name="Commentaire" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Modal pour ajouter une tâche -->
+<div class="modal fade" id="modalAddTask" tabindex="-1" aria-labelledby="modalAddTaskLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajout d'une tâche</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{route('creerTache')}}">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="TitreTache" class="form-label">Titre de la Tâche</label>
+                        <input type="text" class="form-control" id="titre" name="titre">
+                    </div>
+                    <div class="mb-3">
+                        <label for="DescriptionTache" class="form-label">Description</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <select id="employe" name="employe" class="form-select">
+                        <option value="">Sélectionner un Employé</option>
+                        @foreach($employés as $employe)
+                            <option value="{{ $employe->idEmploye }}">Nom:{{ $employe->nom }} Poste: {{$employe->poste->Fonction}}</option>
+                        @endforeach
+                    </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="DateEcheance" class="form-label">Date d'échéance</label>
+                        <input type="date" class="form-control" id="DateEcheance" name="DateEcheance">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal pour ajouter une tâche -->
+<div class="modal fade" id="modalAddAnnonce" tabindex="-1" aria-labelledby="modalAddTaskLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajout d'une tâche</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{route('creerAnnonce')}}">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="Titre" class="form-label">Titre de l'annonce </label>
+                        <input type="text" class="form-control" id="Titre" name="titre">
+                    </div>
+                    <div class="mb-3">
+                        <label for="texte" class="form-label">Texte</label>
+                        <textarea class="form-control" id="Description" name="texte" rows="3"></textarea>
+                    </div>
+                   
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@extends('script')
+@section('scripts')
 <script>
-  var BtnEmp= document.getElementById('Empbtn');
-  BtnEmp.addEventListener('click',function(){
-    var TableEmp= document.getElementById('tableEmployé');
-    var tableDepart=document.getElementById('tableDepart');
-    if(TableEmp.style.display==='none'){
-      TableEmp.style.display='block';
-      tableDepart.style.display='none';
-    }else {
-      TableEmp.style.display='none';
-    }
-  })
-  var Départbtn= document.getElementById('Départbtn');
-  Départbtn.addEventListener('click',function(){
-    var TableEmp= document.getElementById('tableEmployé');
-    var tableDepart=document.getElementById('tableDepart');
-    if(tableDepart.style.display==='none'){
-      TableEmp.style.display='none';
-      tableDepart.style.display='block';
-    }else {
-      tableDepart.style.display='none';
-    }
-  }) 
-  var rechdepbtn= document.getElementById('rechdep');
-  rechdepbtn.addEventListener('click',function(){
-    var TableEmp= document.getElementById('tableEmployé');
-    var tableDepart=document.getElementById('tableDepart');
-    if(tableDepart.style.display==='none'){
-    tableDepart.style.display='block';}
-    }
-  )
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastSuccess = document.getElementById('toastSuccess');
+        const toastError = document.getElementById('toastError');
 
+        // Vérifier si la session contient un message de succès
+        @if(session()->has('success'))
+            // Sélectionner le toast et le montrer
+            var bsToast = new bootstrap.Toast(toastSuccess);
+            bsToast.show();
+        @endif
+        // Vérifier si la session contient un message d'erreur 
+        @if ($errors->any() || session('error'))
+            // Sélectionner le toast et le montrer
+            var bsToast = new bootstrap.Toast(toastError);
+            bsToast.show();
+        @endif 
+    });
 
+    $(document).ready(function () {
+        $('#home').addClass('nav-link disabled');
+        
+        // Données pour les graphiques
+        const employesParDepartement = @json($employesParDepartement);
+        const demandespartype = @json($demandespartype);
 
+        // Graphique Emplois par Département
+        const ctx1 = document.getElementById('emploisParDepartement').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(employesParDepartement),
+                datasets: [{
+                    label: 'Nombre d\'employés',
+                    data: Object.values(employesParDepartement),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true                        
+                    }
+                }
+            }
+        });
+
+        // Graphique Tâches par Statut
+        const ctx2 = document.getElementById('demandespartype').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(demandespartype),
+                datasets: [{
+                    label: 'Nombre de Demande',
+                    data: Object.values(demandespartype),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    });
 </script>
-
+@endsection
+@endsection

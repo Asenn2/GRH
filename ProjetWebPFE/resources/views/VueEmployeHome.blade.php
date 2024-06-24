@@ -4,48 +4,22 @@
 
 <!--La Navbar  -->
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand disabled" href="{{route('InfosPers', ['id' => $employe->idEmploye] )}}"><img src="/bootstrap-icons/icons/file-earmark-person.svg" style="height: 100%"> {{$employe->nom}}  {{ $employe->prenom }}</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link disabled" aria-current="page" href="{{ route("EmployeHome", ['id' => $employe->idEmploye]) }}">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{ route("DemandeConge",['id'=>$employe->idEmploye]) }}">Demande de Congé</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("FormationEmploye",['id'=>$employe->idEmploye]) }}">Formations</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ route("PromotionEmploye",['id'=>$employe->idEmploye]) }}">Promotions</a>
-          </li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('login') }}">
-            <img src="/bootstrap-icons/icons/door-closed-fill.svg" style="height: 80%">
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+@include('navbarEmp')
 
 <!-- Section d'annonces -->
 <section class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-body">
   <h2 class="mb-4">Annonces</h2>
   <div class="row">
     @foreach($annonces as $annonce)
     <div class="col-md-4 mb-4">
-      <div class="card">
+      <div class="card text-bg-danger shadow-lg">
         <div class="card-body">
+          <div class="card-header">
           <h5 class="card-title">{{$annonce->titre}}</h5>
-          <p class="card-text">{{$annonce->texte}}.</p>
+        </div>
+          <p class="card-text mb-3">{{$annonce->texte}}.</p>
         </div>
       </div>
     </div>
@@ -54,23 +28,52 @@
   <h2 class="mb-4">Tableau de bord</h2>
   <div class="row">
     <div class="col-md-6">
-      <div class="card mb-4">
+      <div class="card shadow-lg mb-4">
         <div class="card-body">
           <h5 class="card-title">Tâches à accomplir</h5>
           <ul class="list-group">
             @foreach($taches as $tache)
-            <li class="list-group-item"> &rarr; {{$tache->contenu }}</li>
+            <li class="list-group-item list-group-item-info"> &rarr; {{$tache->Description }}</li>
             @endforeach
           </ul>
         </div>
       </div>
+      <h5 class="mb-4">Gestion de présence</h5>
+      <div class="card shadow-lg mb-4">
+        <div class="card-body">
+          @if($employe->Etat=="Actif")
+          <form action="{{route('PresenceEmploye',['id'=>$employe->idEmploye,'action'=>'devientPlusPresent'])}}" method="post">
+            @csrf
+            @method('put')
+          <button type="submit" class="btn btn-outline-danger">Je ne suis plus présent</button>
+          </form>
+          @elseif($employe->Etat=="Inactif")
+          <form action="{{route('PresenceEmploye',['id'=>$employe->idEmploye,'action'=>'devientPresent'])}}" method="post">
+            @csrf
+            @method('put')
+          <button type="submit" class="btn btn-outline-success">Je suis présent</button>
+        </form>
+@endif
+        </div>
+      </div>
     </div>
     <div class="col-md-6">
-      <div class="card mb-4">
+      <div class="card shadow-lg mb-4">
         <div class="card-body">
-          <h5 class="card-title">Calendrier</h5>
-          <p>Calendrier des congés.</p>
-          <button type="button" class="btn-lg btn-primary float-end " data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Afficher les Congé</button>
+          <h5 class="card-title">Calendrier des Congés</h5>
+          <div class="row">
+            <div class="col-3 mb-1">
+              Congé Personnel:
+              <div class="text-bg-primary p-3"></div>
+            </div>
+            <div class="col-3 mb-1">
+              Congé Annuel:
+              <div class="text-bg-dark p-3"></div>
+            </div>
+            <div class="col-6 d-flex justify-content-end">            
+          <button type="button" class="btn btn-outline-info float-end mb-2 " data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Afficher les Congé</button>
+        </div>
+        </div>
           <div class="card" style="width: 100%">
             <div class="card-body">
               <div id="calendar" style="width: 100%">
@@ -81,6 +84,8 @@
       </div>
     </div>
   </div>
+        </div>
+    </div>
 </section>
 
 <!-- Footer -->
@@ -119,12 +124,16 @@
       </div>
       <div class="offcanvas-body">
        <ul class="list-group list-group-flush">
+        <b>Congé Annuel :</b>
         @foreach($conges as $conge)
         @if($conge->TypeConge==1)
-        <b>Congé Annuel :</b>
       <li class="list-group-item">{{$conge->NomConge}} : {{$conge->DateDebut}} &rarr; {{$conge->DateFin}} </li>
-      @else
-      <b>Mes Congé :</b>
+      @endif
+      @endforeach
+      <hr>
+      <b class="mt-1">Mes Congé :</b>
+      @foreach($conges as $conge)
+      @if(!($conge->TypeConge==1))
       <li class="list-group-item"> {{$conge->DateDebut}} &rarr; {{$conge->DateFin}} </li>
       @endif
       @endforeach
@@ -135,7 +144,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+      $(document).ready(function () {
       const toastSuccess = document.getElementById('toastSuccess');
       const toastError = document.getElementById('toastError');
 
@@ -160,14 +169,20 @@
                             title: '{{ $conge->NomConge }}',
                             start: '{{ $conge->DateDebut }}',
                             end: '{{ $conge->DateFin }}',
+                            @if($conge->TypeConge == '1')  // Condition pour le type de congé
+                    classNames: 'text-center bg-black fs-7' 
+                            @endif
                         },
                     @endforeach
                 ],
-          eventClassNames: 'text-center fs-7'       // Convertit les congés en format JSON pour FullCalendar
+          eventClassNames: 'text-center  fs-7' 
+      // Convertit les congés en format JSON pour FullCalendar
         })
         calendar.render()
       });
-
+      $(document).ready(function () {
+        $('#home').addClass('nav-link disabled');
+    });
 
 
                

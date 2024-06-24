@@ -9,23 +9,33 @@ class Stagiaire extends Model
 {
     use HasFactory;
 
-    protected $table = 'Stagiaire'; 
+    protected $table = 'Stagiaire';
 
-    protected $primaryKey = 'idStagiaire'; 
+    protected $primaryKey = 'idStagiaire';
 
-    protected $fillable = [ 
+    protected $fillable = [
         'NomStagiaire',
         'PrenomStagiaire',
         'DebutStage',
         'FinStage',
+        'Mail',
         'idStage',
+        'Manager'
     ];
 
-     // Clé étrangère ici :
-     
+    // Clé étrangère ici :
+
     public function stage()
     {
         return $this->belongsTo(Stage::class, 'idStage', 'idStage');
     }
-}
 
+    public function tacheStage()
+    {
+        return $this->hasMany(tacheStage::class, 'Stagiaire');
+    }
+    public function manager()
+    {
+        return $this->belongsTo(Employe::class, 'Manager', 'idEmploye');
+    }
+}

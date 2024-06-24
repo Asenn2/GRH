@@ -40,9 +40,9 @@ class Promotion extends Model
         return $this->belongsTo(Employe::class, 'EmployePromu', 'idEmploye');
     }
 
-    public function deamndepromotions()
+    public function demandepromotions()
     {
 
-        return $this->hasMany(DemandePromotion::class);
+        return $this->hasMany(DemandePromotion::class, 'Promotion');
     }
 }

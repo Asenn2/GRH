@@ -24,6 +24,6 @@ class TypeContrat extends Model
     public function contrat()
     {
 
-        return $this->hasMany(Contrat::class);
+        return $this->hasMany(Contrat::class, 'typeContrat');
     }
 }
