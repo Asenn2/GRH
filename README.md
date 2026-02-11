@@ -332,50 +332,9 @@ Ou avec PHPUnit directement :
 ./vendor/bin/phpunit
 ```
 
-## Dépannage
-
-### Problème : Erreur de connexion à la base de données
-**Solution :** Vérifier les paramètres dans le fichier `.env` et s'assurer que MySQL est démarré.
-
-### Problème : Erreur 500 sur la page
-**Solution :** Vérifier les logs dans `storage/logs/laravel.log` et s'assurer que les permissions sont correctes.
-
-### Problème : Les assets ne se chargent pas
-**Solution :** Exécuter `npm run build` et vérifier que le lien symbolique du storage existe.
-
-### Problème : Erreur "Application key not set"
-**Solution :** Exécuter `php artisan key:generate`
-
-## Permissions des Fichiers
-
-S'assurer que les répertoires suivants ont les permissions d'écriture :
-
-```bash
-chmod -R 775 storage bootstrap/cache
-```
-
-## Contribution
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité (`git checkout -b feature/NouvelleFonctionnalite`)
-3. Commiter vos changements (`git commit -m 'Ajout d'une nouvelle fonctionnalité'`)
-4. Pousser vers la branche (`git push origin feature/NouvelleFonctionnalite`)
-5. Ouvrir une Pull Request
-
-## License
-
-Ce projet est un projet académique développé dans le cadre d'un Projet de Fin d'Études (PFE).
 
 ## Auteur
 
 Développé par l'équipe du projet GRH - Asenn2
-
-## Support
-
-Pour toute question ou problème, veuillez ouvrir une issue sur le dépôt GitHub.
-
----
 
 **Note :** Ce projet utilise Laravel 11 qui nécessite PHP 8.2 ou supérieur. Assurez-vous que votre environnement répond à ces exigences avant l'installation.
