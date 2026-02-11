@@ -310,7 +310,7 @@ Le système utilise une base de données relationnelle avec les principales tabl
 
 Pour visualiser le schéma complet de la base de données, ouvrir le fichier `PFE.mwb` avec MySQL Workbench.
 
-## Roles et Permissions
+## Rôles et Permissions
 
 Le système implémente trois niveaux d'accès :
 
