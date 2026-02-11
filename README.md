@@ -335,6 +335,6 @@ Ou avec PHPUnit directement :
 
 ## Auteur
 
-Développé par l'équipe du projet GRH - Asenn2
+Asenn2
 
 **Note :** Ce projet utilise Laravel 11 qui nécessite PHP 8.2 ou supérieur. Assurez-vous que votre environnement répond à ces exigences avant l'installation.
